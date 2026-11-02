@@ -1,0 +1,471 @@
+<div id="much-smarther" class="ms" style="position: relative">
+  <style>
+    /* The Homebridge UI sizes this frame to its content: a scrollbar here would only
+       narrow the page for a moment and make the layout jump. */
+    html { overflow: hidden; }
+    .ms {
+      --ms-green: #2f9e59;
+      --ms-orange: #f0883e;
+      --ms-blue: #3b8eea;
+      --ms-grey: #6c757d;
+      --ms-red: #dc3545;
+      --ms-amber: #e0a800;
+      --ms-line: rgba(127, 127, 127, 0.35);
+      --ms-soft: rgba(127, 127, 127, 0.12);
+      --ms-accent: var(--ms-orange);
+    }
+    .ms.ms-cooling { --ms-accent: var(--ms-blue); }
+    .ms .ms-hidden { display: none !important; }
+    .ms .ms-hint { font-size: 0.85em; opacity: 0.75; }
+    .ms .card { margin-bottom: 1rem; }
+    .ms .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 0; }
+    .ms .ms-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+    .ms .ms-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.65; margin-bottom: 0.4rem; }
+    .ms .ms-label small { font-size: 0.8rem; text-transform: none; letter-spacing: 0; }
+    .ms details > summary { cursor: pointer; }
+    .ms .ms-gap-start { margin-inline-start: 0.5rem; }
+
+    /* Right-to-left languages. The Homebridge UI loads Bootstrap for left-to-right
+       pages, so its checkboxes and menus are mirrored here; the dial keeps its
+       direction, like a physical knob. */
+    .ms[dir='rtl'] .form-check { padding-left: 0; padding-right: 1.5em; }
+    .ms[dir='rtl'] .form-check .form-check-input { float: right; margin-left: 0; margin-right: -1.5em; }
+    .ms[dir='rtl'] .form-select { background-position: left 0.75rem center; padding-left: 2.25rem; padding-right: 0.75rem; }
+    .ms[dir='rtl'] .ms-dial { direction: ltr; }
+
+    /* Icons */
+    .ms .ms-icon { display: inline-flex; width: 1.25rem; height: 1.25rem; flex: none; }
+    .ms .ms-icon svg { width: 100%; height: 100%; }
+    .ms .ms-icon-btn { border: none; background: none; color: inherit; opacity: 0.7; width: 2.1rem; height: 2.1rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+    .ms .ms-icon-btn:hover { opacity: 1; background: var(--ms-soft); }
+    .ms .ms-icon-btn .ms-icon { width: 1.15rem; height: 1.15rem; }
+    .ms .ms-busy .ms-icon { animation: ms-turn 0.9s linear infinite; }
+    @keyframes ms-turn { to { transform: rotate(360deg); } }
+
+    /* Buttons */
+    .ms .ms-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.5rem 1.15rem; border: 1px solid var(--ms-line); border-radius: 0.7rem; background: none; color: inherit; font-weight: 500; text-transform: none; letter-spacing: normal; line-height: 1.3; transition: background-color 0.15s, filter 0.15s; }
+    .ms .ms-btn:hover { background: var(--ms-soft); }
+    .ms .ms-btn:disabled { opacity: 0.5; cursor: default; }
+    .ms .ms-btn-primary { background: var(--ms-accent); border-color: var(--ms-accent); color: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); }
+    .ms .ms-btn-primary:hover { background: var(--ms-accent); filter: brightness(1.08); }
+    .ms .ms-btn-small { padding: 0.3rem 0.85rem; font-size: 0.875rem; }
+    .ms .ms-btn-quiet { border-color: transparent; }
+    .ms .ms-btn .ms-icon { width: 1.05rem; height: 1.05rem; }
+    .ms .ms-round { width: 2.6rem; height: 2.6rem; padding: 0; border-radius: 50%; font-size: 1.25rem; }
+
+    /* Connection dot */
+    .ms .ms-state { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; }
+    .ms .ms-dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; background: var(--ms-grey); flex: none; }
+    .ms .ms-dot.ok { background: var(--ms-green); box-shadow: 0 0 0 3px rgba(47, 158, 89, 0.22); }
+    .ms .ms-dot.busy { background: var(--ms-amber); animation: ms-pulse 1.2s ease-in-out infinite; }
+    .ms .ms-dot.bad { background: var(--ms-red); }
+    @keyframes ms-pulse { 50% { opacity: 0.35; } }
+
+    /* Summary */
+    .ms .ms-summary { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; margin-top: 0.5rem; }
+    .ms .ms-big { font-size: 2.4rem; font-weight: 300; line-height: 1; }
+    .ms .ms-summary-details { display: grid; grid-template-columns: max-content 1fr; gap: 0.15rem 0.75rem; }
+    .ms .ms-summary-details > :nth-child(odd) { opacity: 0.7; }
+
+    /* Tabs */
+    .ms .ms-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; border-bottom: 1px solid var(--ms-line); margin: 1rem 0; }
+    .ms .ms-tabs button { border: none; background: none; padding: 0.5rem 0.9rem; border-bottom: 2px solid transparent; color: inherit; }
+    .ms .ms-tabs button.active { border-bottom-color: currentColor; font-weight: 600; }
+
+    /* Command tiles */
+    .ms .ms-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+    .ms .ms-tile { --tone: var(--ms-grey); display: flex; align-items: center; gap: 0.65rem; min-height: 3.6rem; padding: 0.55rem 0.8rem; border: 1px solid var(--ms-line); border-radius: 0.8rem; background: none; color: inherit; text-align: start; transition: background-color 0.15s, border-color 0.15s; }
+    .ms .ms-tile:hover { background: var(--ms-soft); }
+    .ms .ms-tile .ms-icon { width: 1.6rem; height: 1.6rem; color: var(--tone); }
+    .ms .ms-tile.active { background: var(--tone); border-color: var(--tone); color: #fff; }
+    .ms .ms-tile.active .ms-icon { color: #fff; }
+    .ms .ms-tile-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+    .ms .ms-tile-text small { font-size: 0.75rem; opacity: 0.85; }
+    .ms [data-tone='green'] { --tone: var(--ms-green); }
+    .ms [data-tone='accent'] { --tone: var(--ms-accent); }
+    .ms .ms-rule { border-top: 1px solid var(--ms-line); margin: 1rem 0 0.9rem; }
+    @media (max-width: 30rem) {
+      .ms .ms-tile { flex-direction: column; text-align: center; gap: 0.3rem; }
+      .ms .ms-tile-text { align-items: center; }
+    }
+
+    /* Manual card */
+    .ms .ms-manual { display: grid; grid-template-columns: minmax(11rem, 14rem) minmax(0, 1fr); gap: 1.25rem; align-items: center; margin-top: 0.5rem; }
+    @media (max-width: 30rem) { .ms .ms-manual { grid-template-columns: minmax(0, 1fr); } }
+    .ms .ms-dial { width: 100%; max-width: 13rem; display: block; margin: 0 auto; touch-action: none; cursor: grab; outline: none; }
+    .ms .ms-dial-track { fill: none; stroke: var(--ms-soft); stroke-width: 14; stroke-linecap: round; }
+    .ms .ms-dial-value { fill: none; stroke: var(--ms-accent); stroke-width: 14; stroke-linecap: round; }
+    .ms .ms-dial-knob { fill: #fff; stroke: rgba(0, 0, 0, 0.25); stroke-width: 1; }
+    .ms .ms-dial:focus .ms-dial-knob { stroke: var(--ms-accent); stroke-width: 3; }
+    .ms .ms-dial-number { font-size: 40px; font-weight: 300; fill: currentColor; }
+    .ms .ms-dial-unit { font-size: 15px; fill: currentColor; opacity: 0.7; }
+    .ms .ms-option { display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.55rem 0.7rem; border: 1px solid var(--ms-line); border-radius: 0.6rem; margin-bottom: 0.5rem; cursor: pointer; }
+    .ms .ms-option:has(input:checked) { border-color: var(--ms-accent); background: var(--ms-soft); }
+    .ms .ms-option:has(input:disabled) { opacity: 0.5; cursor: default; }
+    .ms .ms-option input { margin-top: 0.3rem; accent-color: var(--ms-accent); }
+
+    /* Programs */
+    .ms .ms-list-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--ms-line); }
+    .ms .ms-list-item:last-child { border-bottom: none; }
+    .ms .ms-choice { min-width: 8.5rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.35rem 0.9rem; border: 1px solid var(--ms-line); border-radius: 2rem; background: none; color: inherit; font-size: 0.9rem; }
+    .ms .ms-choice:hover { border-color: var(--ms-green); color: var(--ms-green); }
+    .ms .ms-choice.active { background: var(--ms-green); border-color: var(--ms-green); color: #fff; cursor: default; }
+    .ms .ms-choice .ms-icon { width: 1rem; height: 1rem; }
+
+    /* Thermostat */
+    .ms .ms-compact { margin-bottom: 0; }
+    .ms .ms-compact th, .ms .ms-compact td { padding: 0.15rem 0.4rem; font-weight: normal; }
+    .ms .ms-compact th:first-child { opacity: 0.75; }
+    .ms .ms-facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.6rem 1rem; margin-top: 0.5rem; }
+    .ms .ms-fact small { display: block; opacity: 0.7; }
+    .ms .ms-fact div { overflow-wrap: anywhere; }
+    .ms .ms-seasons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; max-width: 32rem; }
+    .ms .ms-season { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.8rem; border: 1px solid var(--ms-line); border-radius: 0.8rem; background: none; color: inherit; text-align: start; }
+    .ms .ms-season:hover { background: var(--ms-soft); }
+    .ms .ms-season strong { font-size: 0.9rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    .ms .ms-season-icon { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; flex: none; border-radius: 50%; color: var(--tone); background: color-mix(in srgb, var(--tone) 15%, transparent); }
+    .ms .ms-season-icon .ms-icon { width: 1.45rem; height: 1.45rem; }
+    .ms .ms-season.active { border-color: var(--tone); background: color-mix(in srgb, var(--tone) 10%, transparent); box-shadow: inset 0 0 0 1px var(--tone); cursor: default; }
+    .ms .ms-season.active .ms-season-icon { color: #fff; background: var(--tone); }
+    .ms [data-season='HEATING'] { --tone: var(--ms-orange); }
+    .ms [data-season='COOLING'] { --tone: var(--ms-blue); }
+
+    /* Settings: fixed columns, no breakpoints near the usual frame width */
+    .ms .ms-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1rem; align-items: end; }
+    .ms .ms-form .form-check { align-self: start; }
+    .ms .ms-form .ms-full { grid-column: 1 / -1; }
+    .ms .ms-signin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 0.5rem; }
+    .ms .ms-inline { display: flex; gap: 0.5rem; }
+    .ms .ms-inline > :first-child { flex: 1; min-width: 0; }
+    .ms .ms-minutes { width: 6.5rem; flex: none; }
+    @media (max-width: 36rem) {
+      .ms .ms-form, .ms .ms-signin { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    /* Day and time picker */
+    .ms .ms-modal { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 1000; }
+    .ms .ms-modal-box { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: min(36rem, calc(100% - 1.5rem)); padding: 1.1rem 1.25rem 1.25rem; border-radius: 1rem; box-shadow: 0 0.75rem 2.5rem rgba(0, 0, 0, 0.35); }
+    .ms .ms-pick-summary { font-size: 1.4rem; font-weight: 300; color: var(--ms-accent); margin: 0.1rem 0 1rem; }
+    .ms .ms-days { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(2.55rem, 1fr); gap: 0.25rem; overflow-x: auto; padding-bottom: 0.2rem; }
+    .ms .ms-day { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; padding: 0.4rem 0; border: 1px solid var(--ms-line); border-radius: 0.65rem; background: none; color: inherit; }
+    .ms .ms-day:hover { background: var(--ms-soft); }
+    .ms .ms-day small { font-size: 0.66rem; opacity: 0.75; white-space: nowrap; }
+    .ms .ms-day strong { font-size: 1.15rem; font-weight: 500; line-height: 1.1; }
+    .ms .ms-day.active { background: var(--ms-accent); border-color: var(--ms-accent); color: #fff; }
+    .ms .ms-day.active small { opacity: 0.9; }
+    .ms .ms-time { display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin: 1.1rem 0 0.4rem; }
+    .ms .ms-spin { display: flex; flex-direction: column; align-items: center; }
+    .ms .ms-spin button { border: none; background: none; color: inherit; opacity: 0.6; padding: 0.15rem 1.1rem; border-radius: 0.5rem; }
+    .ms .ms-spin .ms-icon { width: 1.6rem; height: 1.6rem; }
+    .ms .ms-spin button:hover { opacity: 1; background: var(--ms-soft); }
+    .ms .ms-spin output { display: block; width: 4.6rem; font-size: 2.6rem; font-weight: 300; line-height: 1.35; text-align: center; border-radius: 0.8rem; background: var(--ms-soft); font-variant-numeric: tabular-nums; outline: none; cursor: ns-resize; }
+    .ms .ms-spin output:focus { box-shadow: 0 0 0 2px var(--ms-accent); }
+    .ms .ms-colon { font-size: 2.2rem; font-weight: 300; opacity: 0.55; }
+    .ms .ms-pick-past { min-height: 1.25rem; text-align: center; color: var(--ms-red); font-size: 0.85rem; }
+    .ms .ms-modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem; }
+  </style>
+
+  <div id="ms-auth-failed" class="alert alert-danger ms-hidden" data-i18n="ui.connection.auth-failed"></div>
+  <div id="ms-not-running" class="alert alert-warning ms-hidden" data-i18n="ui.error.not-running"></div>
+
+  <!-- Always visible: what the thermostat is doing now -->
+  <div class="card">
+    <div class="card-body">
+      <div class="ms-head">
+        <span id="ms-title" class="card-title"></span>
+        <span id="ms-connection" class="ms-state" role="status">
+          <span id="ms-connection-dot" class="ms-dot"></span>
+          <span id="ms-connection-text" class="ms-hint"></span>
+        </span>
+      </div>
+      <div id="ms-summary" class="ms-summary">
+        <div>
+          <div id="ms-ambient" class="ms-big">–</div>
+          <div id="ms-humidity" class="ms-hint"></div>
+        </div>
+        <div id="ms-summary-details" class="ms-summary-details"></div>
+      </div>
+      <p id="ms-waiting" class="mt-2 mb-0 ms-hint ms-hidden" data-i18n="ui.status.waiting"></p>
+    </div>
+  </div>
+
+  <nav class="ms-tabs" role="tablist">
+    <button data-tab="commands" data-i18n="ui.tab.commands"></button>
+    <button data-tab="programs" data-i18n="ui.tab.programs"></button>
+    <button data-tab="thermostat" data-i18n="ui.tab.thermostat"></button>
+    <button data-tab="settings" data-i18n="ui.tab.settings"></button>
+  </nav>
+
+  <!-- Commands -->
+  <div data-panel="commands">
+    <div class="card">
+      <div class="card-body">
+        <div class="ms-label" data-i18n="ui.command.modes"></div>
+        <div class="ms-tiles">
+          <button class="ms-tile" data-quick="auto" data-tone="green">
+            <span data-icon="calendar"></span>
+            <span class="ms-tile-text"><span data-i18n="ui.mode.AUTOMATIC"></span><small></small></span>
+          </button>
+          <button class="ms-tile" data-quick="off">
+            <span data-icon="power"></span>
+            <span class="ms-tile-text"><span data-i18n="ui.command.off"></span><small></small></span>
+          </button>
+          <button class="ms-tile" data-quick="off-until">
+            <span data-icon="clock"></span>
+            <span class="ms-tile-text"><span data-i18n="ui.command.offUntilButton"></span><small></small></span>
+          </button>
+        </div>
+        <div class="ms-rule"></div>
+        <div class="ms-label"><span data-i18n="ui.command.boost"></span> · <small data-i18n="ui.command.boostHint"></small></div>
+        <div class="ms-tiles">
+          <button class="ms-tile" data-boost="30" data-tone="accent">
+            <span data-icon="bolt"></span>
+            <span class="ms-tile-text"><span data-minutes="30">30 min</span><small></small></span>
+          </button>
+          <button class="ms-tile" data-boost="60" data-tone="accent">
+            <span data-icon="bolt"></span>
+            <span class="ms-tile-text"><span data-minutes="60">60 min</span><small></small></span>
+          </button>
+          <button class="ms-tile" data-boost="90" data-tone="accent">
+            <span data-icon="bolt"></span>
+            <span class="ms-tile-text"><span data-minutes="90">90 min</span><small></small></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title" data-i18n="ui.command.manual"></div>
+        <div class="ms-manual">
+          <div>
+            <svg id="ms-dial" class="ms-dial" viewBox="0 0 200 200" role="slider" tabindex="0" aria-valuemin="7" aria-valuemax="40">
+              <path id="ms-dial-track" class="ms-dial-track" />
+              <path id="ms-dial-value" class="ms-dial-value" />
+              <circle id="ms-dial-knob" class="ms-dial-knob" r="10" />
+              <text id="ms-dial-text" class="ms-dial-number" x="100" y="108" text-anchor="middle"></text>
+              <text id="ms-dial-unit" class="ms-dial-unit" x="100" y="134" text-anchor="middle">°C</text>
+            </svg>
+            <div class="d-flex justify-content-center gap-2">
+              <button class="ms-btn ms-round" id="ms-temp-down" aria-label="-">−</button>
+              <button class="ms-btn ms-round" id="ms-temp-up" aria-label="+">+</button>
+            </div>
+          </div>
+          <div>
+            <label class="ms-option">
+              <input type="radio" name="ms-manual-end" value="next" id="ms-manual-next" />
+              <span><span class="fw-semibold" data-i18n="ui.command.nextChange"></span><br /><small id="ms-next-label" class="ms-hint"></small></span>
+            </label>
+            <label class="ms-option">
+              <input type="radio" name="ms-manual-end" value="forever" id="ms-manual-forever" />
+              <span class="fw-semibold" data-i18n="ui.command.noEnd"></span>
+            </label>
+            <label class="ms-option">
+              <input type="radio" name="ms-manual-end" value="at" id="ms-manual-at" />
+              <span id="ms-at-label" class="fw-semibold"></span>
+            </label>
+            <button id="ms-manual-send" class="ms-btn ms-btn-primary w-100 mt-2" data-i18n="ui.command.apply"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Programs -->
+  <div data-panel="programs">
+    <div class="card">
+      <div class="card-body py-2">
+        <div id="ms-programs"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thermostat settings and diagnostics -->
+  <div data-panel="thermostat">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title" data-i18n="ui.levels.title"></div>
+        <p class="ms-hint mb-1" data-i18n="ui.settings.readonly"></p>
+        <table class="table table-sm ms-compact">
+          <thead>
+            <tr>
+              <th></th>
+              <th data-i18n="ui.function.HEATING"></th>
+              <th data-i18n="ui.function.COOLING"></th>
+            </tr>
+          </thead>
+          <tbody id="ms-levels"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <div class="ms-head">
+          <div class="card-title" data-i18n="ui.settings.facts"></div>
+          <button id="ms-refresh" class="ms-icon-btn"><span data-icon="refresh"></span></button>
+        </div>
+        <div id="ms-facts" class="ms-facts"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title mb-1" data-i18n="ui.command.season"></div>
+        <p class="ms-hint mb-2" data-i18n="ui.command.seasonHint"></p>
+        <div class="ms-seasons" role="radiogroup">
+          <button class="ms-season" data-season="HEATING" role="radio">
+            <span class="ms-season-icon"><span data-icon="flame"></span></span>
+            <span class="ms-tile-text"><strong data-i18n="ui.season.HEATING"></strong><small data-i18n="ui.function.HEATING"></small></span>
+          </button>
+          <button class="ms-season" data-season="COOLING" role="radio">
+            <span class="ms-season-icon"><span data-icon="snowflake"></span></span>
+            <span class="ms-tile-text"><strong data-i18n="ui.season.COOLING"></strong><small data-i18n="ui.function.COOLING"></small></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connection and plugin settings -->
+  <div data-panel="settings">
+    <div class="card">
+      <div class="card-body">
+        <div class="ms-head">
+          <div class="card-title" data-i18n="ui.connect.title"></div>
+          <span class="ms-state"><span id="ms-pin-dot" class="ms-dot"></span><span id="ms-pin-text"></span></span>
+        </div>
+        <p class="mt-2 mb-1" data-i18n="ui.connect.intro"></p>
+        <p class="ms-hint mb-1" data-i18n="ui.connect.privacy"></p>
+        <p class="ms-hint" data-i18n="ui.connect.changed"></p>
+        <div class="ms-signin">
+          <input id="ms-email" dir="auto" type="email" class="form-control" autocomplete="off" maxlength="256" />
+          <input id="ms-account-password" dir="auto" type="password" class="form-control" autocomplete="off" maxlength="256" />
+          <button id="ms-retrieve" class="ms-btn ms-btn-primary" data-i18n="ui.connect.signIn"></button>
+        </div>
+        <ul id="ms-gateways" class="list-unstyled mt-2 mb-0"></ul>
+        <div id="ms-retry" class="d-flex flex-wrap gap-2 mt-3 align-items-center ms-hidden">
+          <button id="ms-reconnect" class="ms-btn ms-btn-small"><span data-icon="refresh"></span><span data-i18n="ui.connection.retry"></span></button>
+          <span class="ms-hint" data-i18n="ui.connection.retryHint"></span>
+        </div>
+        <details class="mt-3">
+          <summary class="ms-hint" data-i18n="ui.pin.have"></summary>
+          <div class="ms-inline mt-2" style="max-width: 26rem">
+            <input id="ms-pin" dir="auto" type="password" class="form-control" autocomplete="off" maxlength="64" />
+            <button id="ms-pin-save" class="ms-btn ms-btn-small" data-i18n="ui.pin.save"></button>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title mb-2" data-i18n="ui.section.config"></div>
+        <div class="ms-form">
+          <div>
+            <label for="ms-cfg-host" class="form-label" data-i18n="ui.config.host"></label>
+            <input id="ms-cfg-host" dir="auto" class="form-control" maxlength="253" placeholder="192.0.2.10" />
+            <div class="invalid-feedback" data-i18n="ui.config.hostInvalid"></div>
+          </div>
+          <div>
+            <label for="ms-cfg-name" class="form-label" data-i18n="ui.config.name"></label>
+            <input id="ms-cfg-name" dir="auto" class="form-control" maxlength="64" />
+          </div>
+          <div class="ms-full ms-hint" data-i18n="ui.config.hostHint"></div>
+          <div>
+            <label for="ms-cfg-automaticMode" class="form-label" data-i18n="ui.config.automaticMode"></label>
+            <select id="ms-cfg-automaticMode" class="form-select">
+              <option value="auto" data-i18n="ui.config.automaticMode.auto"></option>
+              <option value="switch" data-i18n="ui.config.automaticMode.switch"></option>
+            </select>
+          </div>
+          <div>
+            <label for="ms-cfg-manualEnd" class="form-label" data-i18n="ui.config.manualEnd"></label>
+            <div class="ms-inline">
+              <select id="ms-cfg-manualEnd" class="form-select">
+                <option value="nextChange" data-i18n="ui.config.manualEnd.nextChange"></option>
+                <option value="forever" data-i18n="ui.config.manualEnd.forever"></option>
+                <option value="duration" data-i18n="ui.config.manualEnd.duration"></option>
+              </select>
+              <input id="ms-cfg-manualMinutes" type="number" class="form-control ms-minutes" min="15" max="1440" step="15" />
+            </div>
+          </div>
+          <div>
+            <label for="ms-cfg-language" class="form-label" data-i18n="ui.config.language"></label>
+            <select id="ms-cfg-language" class="form-select"></select>
+          </div>
+          <div></div>
+          <div class="ms-full ms-label mt-2 mb-0" data-i18n="ui.config.homeApp"></div>
+          <div>
+            <div class="mb-1" data-i18n="ui.config.boostSwitches"></div>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check"><input id="ms-cfg-boost30" type="checkbox" class="form-check-input" data-boost-switch="30" /><label for="ms-cfg-boost30" class="form-check-label" data-minutes="30">30 min</label></div>
+              <div class="form-check"><input id="ms-cfg-boost60" type="checkbox" class="form-check-input" data-boost-switch="60" /><label for="ms-cfg-boost60" class="form-check-label" data-minutes="60">60 min</label></div>
+              <div class="form-check"><input id="ms-cfg-boost90" type="checkbox" class="form-check-input" data-boost-switch="90" /><label for="ms-cfg-boost90" class="form-check-label" data-minutes="90">90 min</label></div>
+            </div>
+          </div>
+          <div class="form-check">
+            <input id="ms-cfg-humiditySensor" type="checkbox" class="form-check-input" />
+            <label for="ms-cfg-humiditySensor" class="form-check-label" data-i18n="ui.config.humiditySensor"></label>
+          </div>
+          <div class="ms-full">
+            <div class="mb-1" data-i18n="ui.config.programSwitches"></div>
+            <div id="ms-cfg-programs" class="d-flex flex-wrap gap-3"></div>
+            <div class="ms-hint" data-i18n="ui.config.programSwitchesHint"></div>
+          </div>
+          <div class="form-check">
+            <input id="ms-cfg-offSwitch" type="checkbox" class="form-check-input" />
+            <label for="ms-cfg-offSwitch" class="form-check-label" data-i18n="ui.config.offSwitch"></label>
+            <div class="ms-hint" data-i18n="ui.config.offSwitchHint"></div>
+          </div>
+        </div>
+        <details class="mt-3">
+          <summary data-i18n="ui.config.advanced"></summary>
+          <div class="ms-form mt-2">
+            <div>
+              <label for="ms-cfg-port" class="form-label" data-i18n="ui.config.port"></label>
+              <input id="ms-cfg-port" type="number" class="form-control" min="1" max="65535" placeholder="40000" />
+            </div>
+            <div class="ms-hint mb-2" data-i18n="ui.config.portHint"></div>
+            <div class="ms-full form-check">
+              <input id="ms-cfg-seasonFromHome" type="checkbox" class="form-check-input" />
+              <label for="ms-cfg-seasonFromHome" class="form-check-label" data-i18n="ui.config.seasonFromHome"></label>
+              <div class="ms-hint" data-i18n="ui.config.seasonFromHomeHint"></div>
+            </div>
+          </div>
+        </details>
+        <p class="ms-hint mt-3 mb-0" data-i18n="ui.config.applyHint"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Day and time picker, for "manual until" and "off until" -->
+  <div id="ms-modal" class="ms-modal ms-hidden" role="dialog" aria-modal="true" aria-labelledby="ms-modal-title">
+    <div id="ms-modal-box" class="card ms-modal-box">
+      <div class="ms-head">
+        <div id="ms-modal-title" class="fw-semibold"></div>
+        <button id="ms-pick-close" class="ms-icon-btn"><span data-icon="close"></span></button>
+      </div>
+      <div id="ms-pick-summary" class="ms-pick-summary"></div>
+      <div id="ms-pick-days" class="ms-days"></div>
+      <div class="ms-time">
+        <div class="ms-spin" data-part="hour">
+          <button data-step="1"><span data-icon="up"></span></button>
+          <output id="ms-pick-hour" tabindex="0"></output>
+          <button data-step="-1"><span data-icon="down"></span></button>
+        </div>
+        <div class="ms-colon">:</div>
+        <div class="ms-spin" data-part="minute">
+          <button data-step="1"><span data-icon="up"></span></button>
+          <output id="ms-pick-minute" tabindex="0"></output>
+          <button data-step="-1"><span data-icon="down"></span></button>
+        </div>
+      </div>
+      <div id="ms-pick-past" class="ms-pick-past"></div>
+      <div class="ms-modal-actions">
+        <button id="ms-pick-cancel" class="ms-btn ms-btn-quiet" data-i18n="ui.picker.cancel"></button>
+        <button id="ms-pick-confirm" class="ms-btn ms-btn-primary" data-i18n="ui.picker.confirm"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="ui.js"></script>

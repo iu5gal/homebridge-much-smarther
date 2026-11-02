@@ -1,0 +1,41 @@
+name: Bug report
+description: Something does not work as described in the documentation.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never post personal data or secrets**: no thermostat password (PswOpen), BTicino credentials, HomeKit setup code, IP or MAC addresses of your installation, installation names or network captures. Replace them with placeholders such as `192.0.2.10`.
+
+        For a security vulnerability, do not open an issue: see [SECURITY.md](https://github.com/iu5gal/much-smarther-bridge/blob/main/SECURITY.md).
+
+        *Italiano: puoi scrivere anche in italiano.*
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Plugin, Homebridge, Node.js, and the system (for example Raspberry Pi OS 64-bit).
+      placeholder: plugin 0.1.0, Homebridge 2.5.0, Node.js 24, Raspberry Pi OS
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Thermostat firmware
+      description: Shown on the setup page, Settings tab.
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: The plugin's lines from the Homebridge log. Review them first and replace any personal value with a placeholder.
+      render: text

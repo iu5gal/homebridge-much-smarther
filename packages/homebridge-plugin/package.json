@@ -1,0 +1,45 @@
+{
+  "name": "homebridge-much-smarther",
+  "version": "0.1.0",
+  "displayName": "Much Smarther",
+  "description": "Unofficial local HomeKit bridge for the BTicino Smarther X8000 thermostat",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iu5gal/much-smarther-bridge.git",
+    "directory": "packages/homebridge-plugin"
+  },
+  "homepage": "https://github.com/iu5gal/much-smarther-bridge#readme",
+  "bugs": {
+    "url": "https://github.com/iu5gal/much-smarther-bridge/issues"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "homebridge-ui",
+    "config.schema.json"
+  ],
+  "keywords": [
+    "homebridge-plugin",
+    "bticino",
+    "smarther",
+    "x8000",
+    "thermostat"
+  ],
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0 || ^26.0.0",
+    "homebridge": "^1.8.0 || ^2.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@homebridge/hap-nodejs": "2.2.2",
+    "homebridge": "2.4.0"
+  },
+  "dependencies": {
+    "@homebridge/plugin-ui-utils": "2.2.6",
+    "@much-smarther/core": "0.1.0"
+  }
+}

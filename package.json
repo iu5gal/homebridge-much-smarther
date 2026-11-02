@@ -1,0 +1,42 @@
+{
+  "name": "much-smarther-bridge",
+  "private": true,
+  "description": "Local bridge between the BTicino Smarther X8000 thermostat and Apple Home",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/core",
+    "packages/simulator",
+    "packages/homebridge-plugin"
+  ],
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0 || ^26.0.0"
+  },
+  "scripts": {
+    "hooks:install": "git config core.hooksPath .githooks",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "secrets": "node scripts/check-denylist.mjs --tracked && gitleaks git --redact --no-banner && gitleaks git --pre-commit --redact --no-banner && gitleaks git --pre-commit --staged --redact --no-banner",
+    "audit": "npm audit --omit=dev && npm audit --audit-level=high",
+    "check": "npm run lint && npm run typecheck && npm run test:coverage && npm run secrets && npm run audit",
+    "build": "npm run build --workspaces --if-present",
+    "pack:plugin": "node scripts/pack-plugin.mjs",
+    "pswopen": "npm run build --silent && node tools/retrieve-pswopen.mjs",
+    "session": "npm run build --silent && node tools/read-only-session.mjs",
+    "files": "npm run build --silent && node tools/read-files.mjs",
+    "command": "npm run build --silent && node tools/command.mjs",
+    "simulator": "npm run build --silent && node tools/simulator.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.5",
+    "@vitest/coverage-v8": "5.0.5",
+    "eslint": "10.13.0",
+    "fast-check": "4.10.2",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.0.5"
+  }
+}

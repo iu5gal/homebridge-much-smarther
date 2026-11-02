@@ -1,0 +1,27 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "paths": {
+      "@much-smarther/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@much-smarther/core/cloud": [
+        "./packages/core/src/cloud.ts"
+      ],
+      "@much-smarther/simulator": [
+        "./packages/simulator/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "packages/*/src",
+    "packages/*/test",
+    "scripts",
+    "tools",
+    "*.ts",
+    "*.mjs"
+  ]
+}

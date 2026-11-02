@@ -1,0 +1,45 @@
+# --- Private / installation-specific (never commit) ---
+CLAUDE.local.md
+reference/
+captures/
+
+# Secrets and local configuration
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+secrets.*
+*.secret
+config.local.json
+*.local.json
+
+# Homebridge storage (pairing keys, cached accessories, persisted secrets)
+.homebridge/
+homebridge-storage/
+persist/
+accessories/
+cachedAccessories*
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# --- Build and tooling output ---
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.eslintcache
+.vitest-cache/
+*.tgz
+pack/
+npm-debug.log*
+
+# --- OS / editor ---
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp

@@ -1,0 +1,74 @@
+# Setup
+
+*[Italiano](../it/setup.md)*
+
+After the [installation](installation.md), the plugin needs the thermostat's address and its local password. Everything is done on the plugin's setup page in the Homebridge UI.
+
+## 1. Open the setup page
+
+In the Homebridge UI, open **Plugins**, find **Much Smarther** and open its settings from the menu on its card. The page appears in the language chosen in the plugin settings, English by default.
+
+## 2. Address and language
+
+1. In **Plugin settings**, enter the **Thermostat address**: its IP address on your network, for example `192.0.2.10`. It should be fixed on your router.
+2. Choose the **Language** for the setup page and for the names in the Home app.
+3. Optionally change the **Name in the Home app** (default `Smarther`).
+4. Press **Save** at the bottom of the window. Homebridge restarts.
+
+## 3. Connect the thermostat
+
+The thermostat has a local password, called PswOpen, created when it was first set up with the BTicino app. Almost nobody knows it: it is stored in your BTicino account. Reopen the setup page and, under **Connect the thermostat**, choose one of two ways.
+
+### Sign in with your BTicino account (recommended)
+
+1. Enter the e-mail and password you use in the BTicino Thermostat app.
+2. Press **Sign in and retrieve**.
+3. If the account has more than one thermostat, choose yours with **Use this thermostat**. The page shows the end of each thermostat's MAC address to tell them apart.
+
+The page reads the password once, saves it on the Homebridge machine and connects. Your e-mail and account password are used only for that request and are never saved. The request goes to an **unofficial** BTicino service, which may change; if it stops working, use the other way.
+
+Possible answers:
+
+| Message | What to do |
+| --- | --- |
+| Login rejected | Check the e-mail and password, as used in the BTicino app. |
+| Account temporarily locked | Wait the time shown before trying again. Attempts in the meantime may extend the lock. |
+| Password expired / account needs attention | Open the BTicino app first and follow what it asks. |
+| No thermostat with a password was found | The account does not own a thermostat of this kind, or the cloud has no password for it. Use the account that set up the thermostat. |
+| The BTicino cloud cannot be reached | Check the internet connection of the Homebridge machine, or try later. |
+
+### Enter the password by hand
+
+If you already know the password, open **I already have the local password**, type it and press **Save**.
+
+### When the password changes
+
+A reset of the thermostat creates a new password. The plugin then cannot connect, and the setup page and the log say that the thermostat rejected the password. Sign in again to retrieve the new one.
+
+## 4. Options
+
+Two groups on the setup page, **In the Home app** and **Advanced**. Changes apply when you press **Save** at the bottom of the window; Homebridge then restarts.
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| Weekly program in the Home app | as the "Auto" mode | The weekly program is the Home app's "Auto" mode, or a separate "Schedule" switch. |
+| A temperature set in the Home app lasts | until the next change of the program | As the BTicino app proposes: until the active program next changes level. Or until changed, or for a fixed time (15 minutes to 24 hours). |
+| Allow changing the season from the Home app | off | Lets the Home app switch between heating and cooling. **Only for systems that heat and cool through this thermostat**: on a boiler-only system, cooling would run the boiler. |
+| Show a separate humidity sensor | on | The humidity is also inside the thermostat; the sensor makes it visible on its own tile. |
+| Boost switches | 30, 60, 90 | Which boost switches to show. |
+| Program switches | none | A switch for each weekly program you choose, named as in the BTicino app. The list appears once the plugin has read the programs from the thermostat. |
+| An "Off until the next change" switch | off | Off until the program next changes level, as the BTicino app proposes. |
+| Port | 40000 | Leave it empty unless your thermostat uses another one. |
+
+The same options exist in the Homebridge settings form and in `config.json`; see the [plugin README](../../packages/homebridge-plugin/README.md#configuration) for the keys.
+
+## 5. The rest of the setup page
+
+Once connected, the page also works as a small control panel, with the same choices as the BTicino app:
+
+- **Thermostat**: room temperature and humidity, mode and its end, target temperature, whether the heating is running, the next change of level.
+- **Commands**: manual temperature until a chosen day and time (up to 10 days ahead) or until changed; boost for 30, 60 or 90 minutes; off, or off until a chosen time; back to the program; the season, with a confirmation.
+- **Programs**: the weekly programs with their names, and the choice of the active one.
+- **Settings**: temperature levels, protection temperatures, hysteresis, calibration, panel options, firmware and diagnostics, read only. They are changed in the BTicino app or on the thermostat.
+
+Next: [pairing with the Home app](pairing.md).

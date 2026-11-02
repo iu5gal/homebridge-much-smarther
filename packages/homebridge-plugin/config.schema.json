@@ -1,0 +1,140 @@
+{
+  "pluginAlias": "MuchSmarther",
+  "pluginType": "platform",
+  "singular": true,
+  "customUi": true,
+  "headerDisplay": "Unofficial local bridge for the BTicino Smarther X8000. Not affiliated with BTicino or Legrand.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name in the Home app",
+        "type": "string",
+        "default": "Smarther",
+        "maxLength": 64,
+        "required": true
+      },
+      "host": {
+        "title": "Thermostat address",
+        "type": "string",
+        "placeholder": "192.0.2.10",
+        "maxLength": 253,
+        "required": true
+      },
+      "port": {
+        "title": "Port",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 65535,
+        "placeholder": 40000
+      },
+      "language": {
+        "title": "Language",
+        "type": "string",
+        "default": "en",
+        "oneOf": [
+          { "title": "العربية", "enum": ["ar"] },
+          { "title": "Български", "enum": ["bg"] },
+          { "title": "Català", "enum": ["ca"] },
+          { "title": "Čeština", "enum": ["cs"] },
+          { "title": "Dansk", "enum": ["da"] },
+          { "title": "Deutsch", "enum": ["de"] },
+          { "title": "Ελληνικά", "enum": ["el"] },
+          { "title": "English", "enum": ["en"] },
+          { "title": "Español", "enum": ["es"] },
+          { "title": "Eesti", "enum": ["et"] },
+          { "title": "فارسی", "enum": ["fa"] },
+          { "title": "Suomi", "enum": ["fi"] },
+          { "title": "Français", "enum": ["fr"] },
+          { "title": "Gaeilge", "enum": ["ga"] },
+          { "title": "עברית", "enum": ["he"] },
+          { "title": "हिन्दी", "enum": ["hi"] },
+          { "title": "Hrvatski", "enum": ["hr"] },
+          { "title": "Magyar", "enum": ["hu"] },
+          { "title": "Bahasa Indonesia", "enum": ["id"] },
+          { "title": "Íslenska", "enum": ["is"] },
+          { "title": "Italiano", "enum": ["it"] },
+          { "title": "日本語", "enum": ["ja"] },
+          { "title": "한국어", "enum": ["ko"] },
+          { "title": "Lietuvių", "enum": ["lt"] },
+          { "title": "Latviešu", "enum": ["lv"] },
+          { "title": "Bahasa Melayu", "enum": ["ms"] },
+          { "title": "Malti", "enum": ["mt"] },
+          { "title": "Norsk bokmål", "enum": ["nb"] },
+          { "title": "Nederlands", "enum": ["nl"] },
+          { "title": "Polski", "enum": ["pl"] },
+          { "title": "Português", "enum": ["pt"] },
+          { "title": "Română", "enum": ["ro"] },
+          { "title": "Русский", "enum": ["ru"] },
+          { "title": "Slovenčina", "enum": ["sk"] },
+          { "title": "Slovenščina", "enum": ["sl"] },
+          { "title": "Српски", "enum": ["sr"] },
+          { "title": "Svenska", "enum": ["sv"] },
+          { "title": "ไทย", "enum": ["th"] },
+          { "title": "Türkçe", "enum": ["tr"] },
+          { "title": "Українська", "enum": ["uk"] },
+          { "title": "Tiếng Việt", "enum": ["vi"] },
+          { "title": "简体中文", "enum": ["zh-Hans"] },
+          { "title": "繁體中文", "enum": ["zh-Hant"] }
+        ]
+      },
+      "automaticMode": {
+        "title": "Weekly program in the Home app",
+        "type": "string",
+        "default": "auto",
+        "oneOf": [
+          { "title": "As the Auto mode", "enum": ["auto"] },
+          { "title": "As a separate Schedule switch", "enum": ["switch"] }
+        ]
+      },
+      "manualEnd": {
+        "title": "A temperature set in the Home app lasts",
+        "type": "string",
+        "default": "nextChange",
+        "oneOf": [
+          { "title": "Until the next change of the program", "enum": ["nextChange"] },
+          { "title": "Until changed", "enum": ["forever"] },
+          { "title": "For a fixed time", "enum": ["duration"] }
+        ]
+      },
+      "manualMinutes": {
+        "title": "Minutes",
+        "type": "integer",
+        "default": 120,
+        "minimum": 15,
+        "maximum": 1440,
+        "multipleOf": 15,
+        "condition": { "functionBody": "return model.manualEnd === 'duration';" }
+      },
+      "seasonFromHome": {
+        "title": "Allow changing the season from the Home app (only for systems that heat and cool)",
+        "type": "boolean",
+        "default": false
+      },
+      "humiditySensor": {
+        "title": "Show a separate humidity sensor",
+        "type": "boolean",
+        "default": true
+      },
+      "boostSwitches": {
+        "title": "Boost switches",
+        "type": "array",
+        "uniqueItems": true,
+        "default": [30, 60, 90],
+        "items": { "type": "integer", "enum": [30, 60, 90] }
+      },
+      "programSwitches": {
+        "title": "Programs with a switch (true: all of them)",
+        "type": "array",
+        "uniqueItems": true,
+        "default": [],
+        "items": { "type": "integer", "minimum": 1, "maximum": 10 }
+      },
+      "offSwitch": {
+        "title": "An \"Off until the next change\" switch",
+        "type": "boolean",
+        "default": false
+      }
+    }
+  }
+}

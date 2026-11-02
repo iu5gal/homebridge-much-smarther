@@ -1,0 +1,19 @@
+{
+  "name": "@much-smarther/simulator",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Fake X8000 thermostat implementing the XOpen v3 subset, for integration tests",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@much-smarther/core": "0.1.0"
+  }
+}

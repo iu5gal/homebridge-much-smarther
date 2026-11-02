@@ -1,0 +1,5 @@
+#!/bin/sh
+# Blocks personal data in commit messages.
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+node scripts/check-denylist.mjs --message "$1"

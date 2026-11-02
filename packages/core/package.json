@@ -1,0 +1,24 @@
+{
+  "name": "@much-smarther/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "XOpen v3 client for the BTicino Smarther X8000 (no Homebridge dependency)",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cloud": {
+      "types": "./dist/cloud.d.ts",
+      "default": "./dist/cloud.js"
+    }
+  }
+}
