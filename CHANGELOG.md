@@ -6,6 +6,10 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
+### Changed
+
+- The setup page shows Ko-fi's own button, shipped with the plugin, instead of a text link that was hard to read on dark themes. Nothing is loaded from Ko-fi until it is clicked.
+
 ## [0.1.1] - 2026-11-02
 
 Not published on npm yet: install the package attached to this release.

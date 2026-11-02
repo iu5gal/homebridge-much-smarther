@@ -24,7 +24,10 @@
     .ms .ms-label small { font-size: 0.8rem; text-transform: none; letter-spacing: 0; }
     .ms details > summary { cursor: pointer; }
     .ms .ms-gap-start { margin-inline-start: 0.5rem; }
-    .ms .ms-footer { text-align: center; font-size: 0.85em; opacity: 0.75; margin: 0.25rem 0 0; }
+    .ms .ms-footer { text-align: center; margin: 0.25rem 0 0; }
+    /* Ko-fi's own button, shipped with the plugin: nothing is loaded from Ko-fi until it is clicked. */
+    .ms .ms-kofi { display: inline-block; line-height: 0; border-radius: 8px; }
+    .ms .ms-kofi:hover { filter: brightness(1.06); }
 
     /* Right-to-left languages. The Homebridge UI loads Bootstrap for left-to-right
        pages, so its checkboxes and menus are mirrored here; the dial keeps its
@@ -438,7 +441,9 @@
     </div>
   </div>
 
-  <p class="ms-footer"><a href="https://ko-fi.com/iu5gal" target="_blank" rel="noopener noreferrer" data-i18n="ui.support"></a></p>
+  <p class="ms-footer">
+    <a class="ms-kofi" href="https://ko-fi.com/iu5gal" target="_blank" rel="noopener noreferrer"><img src="kofi-button.svg" width="223" height="30" alt=""><span class="visually-hidden" data-i18n="ui.support"></span></a>
+  </p>
 
   <!-- Day and time picker, for "manual until" and "off until" -->
   <div id="ms-modal" class="ms-modal ms-hidden" role="dialog" aria-modal="true" aria-labelledby="ms-modal-title">
