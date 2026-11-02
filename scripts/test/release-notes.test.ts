@@ -39,6 +39,6 @@ describe('releaseNotes', () => {
     const plugin = JSON.parse(readFileSync(resolve(import.meta.dirname, '../../packages/homebridge-plugin/package.json'), 'utf8')) as {
       version: string;
     };
-    expect(releaseNotes(changelog, plugin.version)).toMatch(/### Added/);
+    expect(releaseNotes(changelog, plugin.version)).toMatch(/### (Added|Changed|Fixed)/);
   });
 });
