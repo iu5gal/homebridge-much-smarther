@@ -8,7 +8,7 @@
 
 Brings the **first-generation** BTicino Smarther thermostat, model **X8000**, into **Apple Home**, through a Homebridge plugin. It talks to the thermostat over your home network, with no cloud at runtime, and behaves as closely as possible to the BTicino Thermostat app.
 
-> **Status: first release, 0.1.0.** Verified on a real X8000 in heating, with Homebridge 2.5 on a Raspberry Pi 3, including restarts and network drops. Not on npm yet: install the package attached to the [latest release](https://github.com/iu5gal/much-smarther-bridge/releases/latest). Cooling has only been tried with the simulator.
+> **Status: early version, 0.1.x.** Verified on a real X8000 in heating, with Homebridge 2.5 on a Raspberry Pi 3, including restarts and network drops. Not on npm yet: install the package attached to the [latest release](https://github.com/iu5gal/much-smarther-bridge/releases/latest). Cooling has only been tried with the simulator.
 
 ## What you get
 

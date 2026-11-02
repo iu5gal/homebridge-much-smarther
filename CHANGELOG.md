@@ -6,6 +6,10 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-02
+
+Not published on npm yet: install the package attached to this release.
+
 ### Added
 
 - A link to support the project on Ko-fi, on the setup page (in every language), in the READMEs and in the package metadata.
