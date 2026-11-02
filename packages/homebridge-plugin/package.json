@@ -13,6 +13,10 @@
   "bugs": {
     "url": "https://github.com/iu5gal/much-smarther-bridge/issues"
   },
+  "funding": {
+    "type": "ko-fi",
+    "url": "https://ko-fi.com/iu5gal"
+  },
   "type": "module",
   "main": "dist/index.js",
   "files": [
@@ -35,8 +39,8 @@
     "build": "tsc -p tsconfig.build.json"
   },
   "devDependencies": {
-    "@homebridge/hap-nodejs": "2.2.2",
-    "homebridge": "2.4.0"
+    "@homebridge/hap-nodejs": "2.3.0",
+    "homebridge": "2.5.0"
   },
   "dependencies": {
     "@homebridge/plugin-ui-utils": "2.2.6",

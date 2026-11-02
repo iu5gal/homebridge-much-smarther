@@ -109,6 +109,10 @@ The package is a single tarball: `scripts/pack-plugin.mjs` copies the compiled c
 
 The plugin's tests use HAP-NodeJS and the simulator: mapping tables, the accessory, the control socket, the setup page requests and the platform from start to shutdown.
 
+## Support
+
+If the plugin is useful to you, you can support its development on [Ko-fi](https://ko-fi.com/iu5gal).
+
 ## Credits and license
 
 Thanks to [Mirmanero](https://github.com/Mirmanero), whose [ha-bticino-x8000](https://github.com/Mirmanero/ha-bticino-x8000) inspired this project. Built with the support of Claude, Anthropic's AI assistant, under the maintainer's direction and review, and verified on a real thermostat. Contributions are welcome: see the [contributing guide](https://github.com/iu5gal/much-smarther-bridge/blob/main/CONTRIBUTING.md).

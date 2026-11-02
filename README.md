@@ -50,6 +50,10 @@ Brings the **first-generation** BTicino Smarther thermostat, model **X8000**, in
 
 Bug reports, tests on other systems (Windows above all), fixes, and corrections to the translations are all gladly accepted. See [Contributing](CONTRIBUTING.md).
 
+## Support
+
+If the project is useful to you, you can support its development on [Ko-fi](https://ko-fi.com/iu5gal). Thank you!
+
 ## How it was made
 
 This project was built with the support of **Claude**, Anthropic's AI assistant, used through Claude Code: the design, code, tests, documentation and translations were written with Claude, under the maintainer's direction and review, and verified on a real thermostat. The project's working rules for Claude are in [CLAUDE.md](CLAUDE.md).

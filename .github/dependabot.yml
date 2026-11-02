@@ -5,13 +5,10 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
-    groups:
-      # The tests use Homebridge, which carries its own hap-nodejs: the two must match.
-      homebridge:
-        patterns:
-          - homebridge
-          - '@homebridge/hap-nodejs'
     ignore:
+      # The tests need the same hap-nodejs as Homebridge: it is updated by hand,
+      # together with Homebridge, to the version Homebridge depends on.
+      - dependency-name: '@homebridge/hap-nodejs'
       # The type definitions follow the oldest supported Node.js, not the newest.
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
