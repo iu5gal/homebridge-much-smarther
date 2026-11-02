@@ -8,8 +8,6 @@ body:
         **Never post personal data or secrets**: no thermostat password (PswOpen), BTicino credentials, HomeKit setup code, IP or MAC addresses of your installation, installation names or network captures. Replace them with placeholders such as `192.0.2.10`.
 
         For a security vulnerability, do not open an issue: see [SECURITY.md](https://github.com/iu5gal/much-smarther-bridge/blob/main/SECURITY.md).
-
-        *Italiano: puoi scrivere anche in italiano.*
   - type: textarea
     id: what
     attributes:

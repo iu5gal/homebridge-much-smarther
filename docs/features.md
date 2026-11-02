@@ -1,8 +1,6 @@
 # Features and limitations
 
-*[Italiano](../it/features.md)*
-
-What the thermostat does when you use the Home app, what the setup page adds, and what is not possible. The complete inventory, with protocol details and sources, is in [FEATURES.md](../FEATURES.md).
+What the thermostat does when you use the Home app, what the setup page adds, and what is not possible. The protocol behind it is described in [PROTOCOL.md](PROTOCOL.md).
 
 ## The Home app and the thermostat
 
@@ -41,7 +39,7 @@ The setup page in the Homebridge UI adds what the Home app cannot show:
 - the **season**, with a confirmation;
 - the thermostat's **settings**, read only: temperature levels, protection temperatures, hysteresis, calibration, panel options, firmware and diagnostics.
 
-See the [setup guide](setup.md#5-the-rest-of-the-setup-page).
+See the [setup guide](setup.md#6-the-rest-of-the-setup-page).
 
 ## Living with the BTicino app
 

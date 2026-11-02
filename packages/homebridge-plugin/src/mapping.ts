@@ -9,7 +9,7 @@ import {
 import type { Settings } from './settings.js';
 
 /**
- * How the thermostat appears in the Home app (docs/FEATURES.md). Pure
+ * How the thermostat appears in the Home app (docs/features.md). Pure
  * functions, so that the mapping can be tested as tables.
  *
  * - "Off" is the app's "Off": `PROTECTION`.

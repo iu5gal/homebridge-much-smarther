@@ -1,12 +1,14 @@
 # homebridge-much-smarther
 
-Homebridge plugin for the BTicino Smarther **X8000** thermostat (first generation), over its local protocol: no cloud at runtime. It uses the client in [`@much-smarther/core`](https://github.com/iu5gal/much-smarther-bridge/blob/main/packages/core/README.md).
+> **Only for the first-generation Smarther, model X8000.** The later Smarther2 with Netatmo is a different product and is not supported.
+
+Homebridge plugin for the **first-generation** BTicino Smarther thermostat, model **X8000**, over its local protocol: no cloud at runtime. It uses the client in [`@much-smarther/core`](https://github.com/iu5gal/much-smarther-bridge/blob/main/packages/core/README.md).
 
 > **Status: first release, 0.1.0.** Verified against a real X8000 in heating, for every command it sends, and with Homebridge 2.5 on a Raspberry Pi 3, including restarts and network drops. Cooling is supported but has only been tried with the simulator. Not affiliated with or endorsed by BTicino or Legrand.
 
 Requires Node.js 22, 24 or 26 and Homebridge 1.8 or later (tried with 1.11 and 2.x). Tried on Linux and macOS. **Windows: everything still has to be tried**; the code supports it and the automated tests run there, but it has never been used with Homebridge on Windows. Reports and contributions are welcome.
 
-User guides, in English and Italian: [installation](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/en/installation.md), [setup](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/en/setup.md), [pairing](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/en/pairing.md), [features and limitations](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/en/features.md), [troubleshooting](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/en/troubleshooting.md), [security](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/en/security.md). Italiano: [installazione](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/it/installation.md).
+User guides: [installation](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/installation.md), [setup and pairing](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/setup.md), [features and limitations](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/features.md), [troubleshooting](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/troubleshooting.md), [security](https://github.com/iu5gal/much-smarther-bridge/blob/main/SECURITY.md).
 
 | Commands | Thermostat settings |
 | --- | --- |
@@ -109,6 +111,6 @@ The plugin's tests use HAP-NodeJS and the simulator: mapping tables, the accesso
 
 ## Credits and license
 
-Built with the support of Claude, Anthropic's AI assistant, under the maintainer's direction and review, and verified on a real thermostat. Contributions are welcome: see the [contributing guide](https://github.com/iu5gal/much-smarther-bridge/blob/main/CONTRIBUTING.md).
+Thanks to [Mirmanero](https://github.com/Mirmanero), whose [ha-bticino-x8000](https://github.com/Mirmanero/ha-bticino-x8000) inspired this project. Built with the support of Claude, Anthropic's AI assistant, under the maintainer's direction and review, and verified on a real thermostat. Contributions are welcome: see the [contributing guide](https://github.com/iu5gal/much-smarther-bridge/blob/main/CONTRIBUTING.md).
 
 MIT. Copyright (c) 2026 iu5gal and contributors.

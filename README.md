@@ -1,8 +1,8 @@
 # Much Smarther Bridge
 
-*[Italiano](README.it.md)*
+> **Only for the first-generation Smarther, model X8000.** The later Smarther2 with Netatmo is a different product and is not supported.
 
-Brings the BTicino Smarther **X8000** thermostat (first generation) into **Apple Home**, through a Homebridge plugin. It talks to the thermostat over your home network, with no cloud at runtime, and behaves as closely as possible to the BTicino Thermostat app.
+Brings the **first-generation** BTicino Smarther thermostat, model **X8000**, into **Apple Home**, through a Homebridge plugin. It talks to the thermostat over your home network, with no cloud at runtime, and behaves as closely as possible to the BTicino Thermostat app.
 
 > **Status: first release, 0.1.0.** Verified on a real X8000 in heating, with Homebridge 2.5 on a Raspberry Pi 3, including restarts and network drops. Not on npm yet: install the package attached to the [latest release](https://github.com/iu5gal/much-smarther-bridge/releases/latest). Cooling has only been tried with the simulator.
 
@@ -23,29 +23,24 @@ Brings the BTicino Smarther **X8000** thermostat (first generation) into **Apple
 
 | | |
 | --- | --- |
-| [Installation on a Raspberry Pi](docs/en/installation.md) | Homebridge from its Debian packages, then the plugin |
-| [Setup](docs/en/setup.md) | Address, password, options |
-| [Pairing](docs/en/pairing.md) | Adding the bridge to the Home app |
-| [Features and limitations](docs/en/features.md) | What each Home app control does on the thermostat |
-| [Troubleshooting](docs/en/troubleshooting.md) | Log messages and common problems |
-| [Security and privacy](docs/en/security.md) | What to know to run it safely |
+| [Installation on a Raspberry Pi](docs/installation.md) | Homebridge from its Debian packages, then the plugin |
+| [Setup and pairing](docs/setup.md) | Address, password, options, adding the bridge to the Home app |
+| [Features and limitations](docs/features.md) | What each Home app control does on the thermostat |
+| [Troubleshooting](docs/troubleshooting.md) | Log messages and common problems |
+| [Security](SECURITY.md) | Running it safely, and reporting a vulnerability |
 | [Plugin reference](packages/homebridge-plugin/README.md) | Settings in `config.json`, development |
-| [Protocol notes](docs/PROTOCOL.md) | The thermostat's local protocol, as far as we know it |
-| [Native features](docs/FEATURES.md) | Inventory of the thermostat's functions and their mapping |
-| [Security model](docs/SECURITY-MODEL.md) | Threats, mitigations, residual risks |
-| [Manual tests](docs/TESTING.md) | Checks against a real device |
-| [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) · [Changelog](CHANGELOG.md) | |
+| [Protocol notes](docs/PROTOCOL.md) · [Security model](docs/SECURITY-MODEL.md) · [Manual tests](docs/TESTING.md) | For developers |
+| [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) | |
 
 ## Requirements
 
-- A BTicino Smarther X8000, first generation, set up with the BTicino Thermostat app. The later Smarther2 with Netatmo is a different product and is not supported.
+- A **first-generation** BTicino Smarther, model X8000, set up with the BTicino Thermostat app. Not the later Smarther2 with Netatmo.
 - Homebridge 1.8 or later (tried with 1.11 and 2.x) on an always-on machine on the same network, with Node.js 22, 24 or 26.
 - To retrieve the thermostat's password: the BTicino account it belongs to, or the password itself.
 
 ## Good to know
 
 - **Windows: everything still has to be tried.** The code supports it and the automated tests run on Windows, but the plugin has never been used with Homebridge on Windows. Reports are very welcome.
-
 - **One local client.** The thermostat accepts a single local session, and the plugin keeps it. The BTicino app keeps working through the BTicino cloud; without internet, only the Home app can reach the thermostat.
 - **The weekly programs** are created and edited in the BTicino app.
 - **No remote access** of its own: away from home, use the BTicino app, or an Apple home hub.
@@ -77,7 +72,7 @@ See [Contributing](CONTRIBUTING.md) before your first change.
 
 ## Credits
 
-The protocol work was informed by [Mirmanero/ha-bticino-x8000](https://github.com/Mirmanero/ha-bticino-x8000), a Home Assistant integration for the same thermostat. Thanks to its author. No code was copied from it: this project is implemented from its own [protocol notes](docs/PROTOCOL.md).
+Many thanks to [Mirmanero](https://github.com/Mirmanero) for [ha-bticino-x8000](https://github.com/Mirmanero/ha-bticino-x8000), the Home Assistant integration for the same thermostat: that work on the local protocol inspired this project and made it possible.
 
 ## License
 

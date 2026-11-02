@@ -1,7 +1,5 @@
 # Troubleshooting
 
-*[Italiano](../it/troubleshooting.md)*
-
 Start from the Homebridge log (**Logs** in the Homebridge UI). The plugin's lines begin with the accessory name, `[Smarther]` by default, and are in English.
 
 ## Messages in the log
@@ -35,7 +33,7 @@ Start from the Homebridge log (**Logs** in the Homebridge UI). The plugin's line
 
 **The Home app shows "Heat", not "manual".** That is how the Home app shows the thermostat's manual mode: it has no other choice. See [features](features.md).
 
-**Two thermostats appear.** An old bridge is still paired. Remove it from the Home app ([pairing](pairing.md#replacing-a-bridge)).
+**Two thermostats appear.** An old bridge is still paired. Remove it from the Home app ([pairing](setup.md#replacing-a-bridge)).
 
 ## On the setup page
 

@@ -2,7 +2,7 @@
   "name": "homebridge-much-smarther",
   "version": "0.1.0",
   "displayName": "Much Smarther",
-  "description": "Unofficial local HomeKit bridge for the BTicino Smarther X8000 thermostat",
+  "description": "Unofficial local HomeKit bridge for the first-generation BTicino Smarther thermostat (X8000)",
   "license": "MIT",
   "repository": {
     "type": "git",

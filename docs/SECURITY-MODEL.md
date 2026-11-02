@@ -2,8 +2,6 @@
 
 This document describes what Much Smarther Bridge protects, from whom, how, and what it cannot protect. It covers the Homebridge plugin, the core library and the development tools in this repository. To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 
-*[Italiano: sintesi per gli utenti](it/security.md)*
-
 ## 1. System overview
 
 ```text
@@ -121,4 +119,4 @@ These are outside the project's control, or accepted for v1.
 - After a thermostat reset, retrieve the new password from the setup page.
 - Treat Homebridge backups and debug logs as private.
 
-The user guide repeats these points: [English](en/security.md), [Italiano](it/security.md).
+The same points, for users, are in [SECURITY.md](../SECURITY.md#running-it-safely).

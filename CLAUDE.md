@@ -11,7 +11,7 @@ A local bridge that brings the BTicino Smarther **X8000** thermostat (first gene
 1. **Local control.** Control the X8000 over its LAN protocol and expose it to Apple Home (HomeKit). The behaviour must be as faithful as possible to the native BTicino Thermostat app.
 2. **Small footprint.** Run 24/7 on a Raspberry Pi with 1 GB of RAM that already hosts other critical services, without disturbing them.
 3. **Open-source release, only after verification.** Once the tool is built, tested and verified on the real device, publish it on GitHub with:
-   - bilingual documentation and UI (English and Italian);
+   - documentation in English and a setup UI in 43 languages;
    - automated tests;
    - strict security and privacy hygiene.
 4. **No paid services.** Everything must work without subscriptions, paid APIs or paid cloud services, both for the owner and for anyone who uses the project.
@@ -60,7 +60,7 @@ A local bridge that brings the BTicino Smarther **X8000** thermostat (first gene
   - `packages/homebridge-plugin`: the Homebridge plugin.
     - The npm name must start with `homebridge-`.
     - Maps the core state to HomeKit services.
-    - Includes a custom setup UI in English and Italian.
+    - Includes a custom setup UI in 43 languages.
   - `packages/simulator`: a fake thermostat implementing the protocol subset, used by the integration tests.
 - **Runtime.** Homebridge hosts the plugin.
   - Install it from the official Debian packages on the existing OS.
@@ -71,7 +71,7 @@ A local bridge that brings the BTicino Smarther **X8000** thermostat (first gene
 
 The thermostat must feel native in Apple Home and behave like the BTicino app.
 
-1. **Inventory first.** Before designing any mapping, write `docs/FEATURES.md`. List every native function: device panel, Thermostat app, manuals, cloud API fields. For each one, record:
+1. **Inventory first.** Before designing any mapping, write the native features inventory, `notes/FEATURES.md` (local only, excluded from git through `.git/info/exclude`; the public summary is `docs/features.md`). List every native function: device panel, Thermostat app, manuals, cloud API fields. For each one, record:
    - native behaviour;
    - protocol messages involved;
    - HomeKit representation;
@@ -172,10 +172,11 @@ The thermostat must feel native in Apple Home and behave like the BTicino app.
 
 ## Documentation and UI languages
 
-- **Documentation languages.** English is primary; Italian is maintained in parallel.
-  - `README.md` and `README.it.md`.
-  - `docs/en/` and `docs/it/`: the user guides, with the same file names in both.
-  - Developer references stay in `docs/` in English only: `PROTOCOL.md`, `FEATURES.md`, `TESTING.md`, `SECURITY-MODEL.md`. `docs/it/protocol.md` summarises the protocol in Italian.
+- **Documentation language.** English only (owner's decision, 2026-11-02), and as few files as possible.
+  - User guides: `docs/installation.md`, `docs/setup.md` (setup and pairing), `docs/features.md`, `docs/troubleshooting.md`; user security advice in `SECURITY.md`.
+  - Developer references: `docs/PROTOCOL.md`, `docs/SECURITY-MODEL.md`, `docs/TESTING.md`.
+  - Local only, in `notes/` (excluded from git): `FEATURES.md`, the full native features inventory, and `TEST-RUNS.md`, the recorded manual runs.
+  - Always state clearly that only the first-generation Smarther (X8000) is supported.
 - **UI languages.** The setup page and HomeKit service names come from translation files in `packages/homebridge-plugin/src/locales/`, one per language. The language is selectable in the config.
   - 43 languages: all European Union languages, the main other European ones, and the main Asian and Middle Eastern ones.
   - English is the reference; every language has the same keys and placeholders (tested).
@@ -185,7 +186,7 @@ The thermostat must feel native in Apple Home and behave like the BTicino app.
   - Installation on a Raspberry Pi with Homebridge from the Debian packages.
   - Setup: PIN retrieval or manual entry.
   - Pairing.
-  - Features and limitations, from `FEATURES.md`.
+  - Features and limitations, from the inventory.
   - Troubleshooting.
   - Protocol notes.
   - Security model.
@@ -211,7 +212,7 @@ The thermostat must feel native in Apple Home and behave like the BTicino app.
    - No code from `reference/`.
 1. **Discovery.**
    - Read-only connection test against the real device.
-   - Write `docs/PROTOCOL.md` and `docs/FEATURES.md`.
+   - Write `docs/PROTOCOL.md` and the features inventory.
    - Capture and sanitize sample messages. Raw captures stay in `captures/`, which is gitignored.
 2. **Core, simulator and tests.**
 3. **Homebridge plugin, setup UI (EN/IT) and tests.** Try it on the development machine with a temporary Homebridge instance.

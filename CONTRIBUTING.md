@@ -1,7 +1,5 @@
 # Contributing
 
-*[Italiano](docs/it/contributing.md)*
-
 Contributions from anyone are gladly accepted: bug reports, tests on systems we could not try (**Windows above all, where everything still has to be tried**), fixes, new features within the project's scope, and corrections to the translations. This project was built with the support of Claude, Anthropic's AI assistant; contributions written with AI tools are welcome too, as long as you have reviewed and tested them and they follow the rules below.
 
 Thank you for helping. This project controls heating in real homes, and it runs where people keep personal data, so it has a few firm rules. Please read them before your first change.
@@ -11,7 +9,7 @@ By contributing, you agree that your contribution is licensed under the [MIT Lic
 ## Ground rules
 
 1. **No personal data, ever.** No IP or MAC addresses of your installation, serial numbers, plant or gateway names, e-mail addresses, passwords, HomeKit setup codes or network captures, in code, tests, docs, commits, issues or screenshots. Use placeholders: addresses from 192.0.2.0/24 (RFC 5737), `example.com`, fake passwords such as `fake-pin-0000`.
-2. **No code from other projects without a compatible license.** In particular, the Home Assistant integration credited in the README declares no license: do not copy its code. The protocol is implemented from [docs/PROTOCOL.md](docs/PROTOCOL.md), written in our own words. New protocol knowledge goes there first, with its source tag.
+2. **No code from other projects without a compatible license.** In particular, the Home Assistant integration credited in the README declares no license, so its code must not be copied. The protocol is implemented from [docs/PROTOCOL.md](docs/PROTOCOL.md), written in our own words. New protocol knowledge goes there first, with its source tag.
 3. **Only safe commands reach the thermostat.** New commands are whitelisted operations with validated ranges. No raw message passthrough from HomeKit, the setup page or the configuration.
 4. **Security issues are reported privately**: see [SECURITY.md](SECURITY.md).
 
@@ -78,7 +76,7 @@ The setup page and the Home app names come from `packages/homebridge-plugin/src/
 
 ## Documentation
 
-English is the primary language, and Italian is kept in parallel: `README.md` and `README.it.md`, `docs/en/` and `docs/it/`. A change to one should come with the other; if you cannot write Italian, say so in the pull request and a maintainer will help.
+The documentation is in English: `README.md`, `docs/`, `SECURITY.md` and this guide. Keep it short and in step with the code.
 
 ## Commits and pull requests
 

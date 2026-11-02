@@ -64,7 +64,7 @@ export function showNoResponse(hap: HAP, host: AccessoryHost): void {
 }
 
 /**
- * One HomeKit accessory for the thermostat (docs/FEATURES.md): a Thermostat
+ * One HomeKit accessory for the thermostat (docs/features.md): a Thermostat
  * service and, as the settings ask, a Humidity Sensor, three Boost switches,
  * a Schedule switch, a switch per weekly program and an "Off until the next
  * change" switch. Values come from the controller's snapshot; changes go to

@@ -1,14 +1,12 @@
 # Installation on a Raspberry Pi
 
-*[Italiano](../it/installation.md)*
-
 This guide installs Homebridge from its official Debian packages, then the plugin. It was followed on a Raspberry Pi 3 with 1 GB of RAM and the 64-bit Raspberry Pi OS (Debian 13), with other services already running. Other Debian or Ubuntu machines work the same way.
 
-Next steps: [setup](setup.md), then [pairing with the Home app](pairing.md).
+Next step: [setup and pairing](setup.md).
 
 ## What you need
 
-- A BTicino Smarther **X8000** (first generation, not the later Smarther2 with Netatmo), already set up with the BTicino Thermostat app and connected to your Wi-Fi.
+- A **first-generation** BTicino Smarther, model **X8000** (not the later Smarther2 with Netatmo), already set up with the BTicino Thermostat app and connected to your Wi-Fi.
 - A Raspberry Pi, or another always-on Linux machine, on the same network.
 - An iPhone or iPad with the Home app, on the same network.
 - To retrieve the thermostat's password: the e-mail and password of the BTicino account the thermostat belongs to. Alternatively, the password itself, if you already have it.

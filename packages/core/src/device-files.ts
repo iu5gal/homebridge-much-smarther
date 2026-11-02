@@ -180,7 +180,7 @@ export interface DeviceConfiguration {
   readonly localSettingsEnabled?: boolean;
 }
 
-/** Ranges the BTicino app accepts (FEATURES.md §4). Values outside are implausible. */
+/** Ranges the BTicino app accepts. Values outside are implausible. */
 export const HEATING_PROTECTION_RANGE = { min: 3, max: 18 } as const;
 export const COOLING_PROTECTION_RANGE = { min: 28, max: 40 } as const;
 const LEVEL_RANGE = { min: 3, max: 40 } as const;

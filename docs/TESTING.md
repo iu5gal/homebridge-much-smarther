@@ -63,7 +63,7 @@ With a temporary Homebridge on the development machine first (Phase 3), then on 
 - [ ] Moving the target temperature slider sends one command only, after the slider stops; the BTicino app shows "manual" with the end it would have proposed itself.
 - [ ] "Off" switches the thermostat off as the app does; "Heat" from "Off" brings back the last temperature.
 - [ ] Prototype A (`automaticMode: "auto"`): "Auto" returns to the program, and shows as such when the program is resumed in the app.
-- [ ] Prototype B (`automaticMode: "switch"`): the "Schedule" switch does the same. (Compared in Phase 3: "Auto" was chosen, see FEATURES.md; B stays an option.)
+- [ ] Prototype B (`automaticMode: "switch"`): the "Schedule" switch does the same. (Compared in Phase 3: "Auto" was chosen; B stays an option.)
 - [ ] Boost switches: one at a time; switching the active one off returns to the program; a boost started on the panel shows on the right switch.
 - [ ] Program switches (`programSwitches`): one per chosen program, named as in the app; turning one on runs it; a program chosen in the app shows on the right switch.
 - [ ] "Off until next change" switch (`offSwitch`): the app shows off until the time it would propose; switching it off returns to the program.
@@ -73,17 +73,3 @@ With a temporary Homebridge on the development machine first (Phase 3), then on 
 - [ ] The setup page: status, commands, programs, settings and diagnostics match the app; the password can be saved and the plugin reconnects.
 - [ ] Memory: note the resident memory of the Homebridge process with the plugin, after an hour.
 - [ ] Windows, when a Windows computer or the CI is available: the setup page reaches the plugin over its named pipe, saves the password and sends commands.
-
-## Recorded runs
-
-### Phase 4 and 5, 2026-11-01 and 2026-11-02
-
-Raspberry Pi 3 (1 GB, 64-bit Raspberry Pi OS, Debian 13) with other services running; Homebridge 2.5.0 from the Debian package (bundled Node.js 24), main bridge; plugin 0.1.0-beta.1 from a package file; one X8000 in heating.
-
-- **§4 Resilience.**
-  - Homebridge restart: authenticated again about 15 s after the restart command.
-  - Raspberry Pi reboot: authenticated again about 86 s after the reboot command; the other services came back by themselves and were unaffected.
-  - Router restart: the loss was detected after 10 s (keep-alive timeout); reconnection attempts after about 2, 4, 8 and 14 s; one refusal (`connection closed by the thermostat`) while the device still held the old session; authenticated about 33 s after the loss was detected.
-  - Thermostat power cycle: not run.
-- **§5 Apple Home**, on the Pi: pairing, sync from the app and the panel within seconds, the slider (one command after it stops: manual until the next change of level), Off and Heat, Auto, Boost switches, names in the configured language, the setup page: all as expected. The Home app shows the thermostat's manual mode as "Heat", which is the only choice HomeKit offers.
-- **Memory.** Available memory: 714 MiB before Homebridge, about 590 MiB with Homebridge alone, 575–581 MiB with the plugin, unchanged after 23 hours. Resident memory: Homebridge with the plugin about 105 MB, the Homebridge UI service about 155 MB (both include shared memory). The setup page, while open, adds a process of about 70 MB.
