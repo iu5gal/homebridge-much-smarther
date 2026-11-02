@@ -168,4 +168,5 @@ export const ko: Messages = {
   'ui.config.offSwitchHint':
     '앱과 마찬가지로 프로그램의 단계가 바뀔 때까지 꺼집니다. 스위치를 끄면 프로그램으로 돌아갑니다.',
   'ui.config.applyHint': '이 창 하단의 저장을 누르면 변경 사항이 적용되고, 이후 Homebridge가 다시 시작됩니다.',
+  'ui.support': '플러그인이 마음에 드시나요? Ko-fi에서 후원해 주세요',
 };

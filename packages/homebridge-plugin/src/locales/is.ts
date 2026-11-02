@@ -170,4 +170,5 @@ export const is: Messages = {
     'Slökkt þar til áætlunin skiptir um stig, eins og í forritinu. Ef slökkt er á rofanum gildir áætlunin aftur.',
   'ui.config.applyHint':
     'Breytingar taka gildi þegar þú ýtir á Vista neðst í þessum glugga: Homebridge endurræsist síðan.',
+  'ui.support': 'Líkar þér viðbótin? Styddu hana á Ko-fi',
 };

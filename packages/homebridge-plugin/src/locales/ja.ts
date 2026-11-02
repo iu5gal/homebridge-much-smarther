@@ -170,4 +170,5 @@ export const ja: Messages = {
   'ui.config.offSwitchHint':
     'アプリと同様に、プログラムのレベルが変わるまでオフになります。スイッチをオフにするとプログラムに戻ります。',
   'ui.config.applyHint': 'このウィンドウ下部の「保存」を押すと変更が適用され、その後Homebridgeが再起動します。',
+  'ui.support': 'このプラグインが気に入ったら、Ko-fiで応援してください',
 };

@@ -171,4 +171,5 @@ export const ca: Messages = {
     'Apagat fins que el programa canviï de nivell, com a l’app. En apagar-lo, es torna al programa.',
   'ui.config.applyHint':
     'Els canvis s’apliquen quan prems Desa a la part inferior d’aquesta finestra: després, Homebridge es reinicia.',
+  'ui.support': 'T’agrada el connector? Dona-li suport a Ko-fi',
 };

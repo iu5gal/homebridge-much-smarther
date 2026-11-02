@@ -170,4 +170,5 @@ export const sk: Messages = {
     'Vypnuté, kým program nezmení úroveň, ako v aplikácii. Vypnutím prepínača sa obnoví program.',
   'ui.config.applyHint':
     'Zmeny sa použijú po stlačení tlačidla Uložiť v dolnej časti tohto okna: Homebridge sa potom reštartuje.',
+  'ui.support': 'Páči sa vám plugin? Podporte ho na Ko-fi',
 };

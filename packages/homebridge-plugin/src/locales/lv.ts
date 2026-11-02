@@ -170,4 +170,5 @@ export const lv: Messages = {
     'Izslēgts, līdz programma maina līmeni, kā lietotnē. Izslēdzot slēdzi, atkal darbojas programma.',
   'ui.config.applyHint':
     'Izmaiņas stājas spēkā, kad nospiežat Saglabāt šī loga apakšā: pēc tam Homebridge restartējas.',
+  'ui.support': 'Patīk spraudnis? Atbalstiet to Ko-fi',
 };

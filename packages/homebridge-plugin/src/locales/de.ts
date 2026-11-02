@@ -170,4 +170,5 @@ export const de: Messages = {
     'Aus, bis das Programm die Stufe wechselt, wie in der App. Wird er ausgeschaltet, gilt wieder das Programm.',
   'ui.config.applyHint':
     'Änderungen werden übernommen, wenn Sie unten in diesem Fenster auf „Speichern“ klicken: Homebridge startet dann neu.',
+  'ui.support': 'Gefällt Ihnen das Plugin? Unterstützen Sie es auf Ko-fi',
 };

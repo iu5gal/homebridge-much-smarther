@@ -170,4 +170,5 @@ export const sl: Messages = {
     'Izklopljeno, dokler program ne spremeni ravni, kot v aplikaciji. Ko stikalo izklopite, spet velja program.',
   'ui.config.applyHint':
     'Spremembe se uveljavijo, ko pritisnete Shrani na dnu tega okna: Homebridge se nato znova zažene.',
+  'ui.support': 'Vam je vtičnik všeč? Podprite ga na Ko-fi',
 };

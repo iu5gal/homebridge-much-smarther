@@ -171,4 +171,5 @@ export const nb: Messages = {
     'Av til programmet bytter nivå, som i appen. Når du slår den av, gjelder programmet igjen.',
   'ui.config.applyHint':
     'Endringene trer i kraft når du trykker på Lagre nederst i dette vinduet: Homebridge starter deretter på nytt.',
+  'ui.support': 'Liker du programtillegget? Støtt det på Ko-fi',
 };

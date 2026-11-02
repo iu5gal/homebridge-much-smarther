@@ -170,4 +170,5 @@ export const pl: Messages = {
     'Wyłączony do zmiany poziomu w programie, jak w aplikacji. Wyłączenie przełącznika przywraca program.',
   'ui.config.applyHint':
     'Zmiany zostaną zastosowane po naciśnięciu przycisku Zapisz na dole tego okna: następnie Homebridge uruchomi się ponownie.',
+  'ui.support': 'Podoba ci się wtyczka? Wesprzyj ją na Ko-fi',
 };

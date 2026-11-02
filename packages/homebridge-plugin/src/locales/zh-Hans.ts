@@ -163,4 +163,5 @@ export const zhHans: Messages = {
   'ui.config.offSwitch': '“关闭至下次变更”开关',
   'ui.config.offSwitchHint': '关闭至程序切换档位，与 App 中相同。关闭此开关即恢复程序。',
   'ui.config.applyHint': '按此窗口底部的“保存”后更改生效：随后 Homebridge 会重新启动。',
+  'ui.support': '喜欢这个插件吗？欢迎在 Ko-fi 上支持它',
 };

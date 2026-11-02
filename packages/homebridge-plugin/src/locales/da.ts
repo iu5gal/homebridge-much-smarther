@@ -170,4 +170,5 @@ export const da: Messages = {
     'Slukket, til programmet skifter niveau, som i appen. Når du slukker kontakten, gælder programmet igen.',
   'ui.config.applyHint':
     'Ændringerne træder i kraft, når du trykker på Gem nederst i dette vindue: Homebridge genstarter derefter.',
+  'ui.support': 'Kan du lide pluginnet? Støt det på Ko-fi',
 };

@@ -170,4 +170,5 @@ export const hu: Messages = {
     'Kikapcsolva, amíg a program szintet nem vált, mint az alkalmazásban. Kikapcsolásával ismét a program érvényes.',
   'ui.config.applyHint':
     'A módosítások az ablak alján található Mentés gomb megnyomásakor lépnek érvénybe: ezután a Homebridge újraindul.',
+  'ui.support': 'Tetszik a bővítmény? Támogassa a Ko-fin',
 };

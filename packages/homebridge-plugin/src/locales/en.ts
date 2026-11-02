@@ -178,4 +178,5 @@ export const en = {
   'ui.config.offSwitch': 'An "Off until the next change" switch',
   'ui.config.offSwitchHint': 'Off until the program changes level, as in the app. Turning it off goes back to the program.',
   'ui.config.applyHint': 'Changes apply when you press Save at the bottom of this window: Homebridge then restarts.',
+  'ui.support': 'Like the plugin? Support it on Ko-fi',
 } as const;

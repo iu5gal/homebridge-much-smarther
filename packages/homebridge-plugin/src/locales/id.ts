@@ -169,4 +169,5 @@ export const id: Messages = {
     'Mati sampai program berganti level, seperti di aplikasi. Mematikan sakelar akan kembali ke program.',
   'ui.config.applyHint':
     'Perubahan diterapkan saat Anda menekan Simpan di bagian bawah jendela ini: lalu Homebridge dimulai ulang.',
+  'ui.support': 'Suka plugin ini? Dukung di Ko-fi',
 };

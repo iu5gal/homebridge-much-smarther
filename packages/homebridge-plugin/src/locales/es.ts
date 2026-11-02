@@ -170,4 +170,5 @@ export const es: Messages = {
     'Apagado hasta que el programa cambie de nivel, como en la app. Al apagarlo, se vuelve al programa.',
   'ui.config.applyHint':
     'Los cambios se aplican al pulsar Guardar al final de esta ventana: después, Homebridge se reinicia.',
+  'ui.support': '¿Te gusta el plugin? Apóyalo en Ko-fi',
 };

@@ -165,4 +165,5 @@ export const it: Messages = {
   'ui.config.offSwitch': 'Un interruttore «Spento fino al prossimo cambio»',
   'ui.config.offSwitchHint': 'Spento fino al prossimo cambio di livello del programma, come nell’app. Spegnerlo torna al programma.',
   'ui.config.applyHint': 'Le modifiche si applicano premendo Salva in fondo a questa finestra: Homebridge poi si riavvia.',
+  'ui.support': 'Ti piace il plugin? Sostienilo su Ko-fi',
 };

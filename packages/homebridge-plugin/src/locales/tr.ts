@@ -172,4 +172,5 @@ export const tr: Messages = {
     'Program seviye değiştirene kadar kapalı, uygulamadaki gibi. Kapatıldığında program yeniden geçerli olur.',
   'ui.config.applyHint':
     'Değişiklikler bu pencerenin altındaki Kaydet’e bastığınızda uygulanır: ardından Homebridge yeniden başlar.',
+  'ui.support': 'Eklentiyi beğendiniz mi? Ko-fi’da destekleyin',
 };

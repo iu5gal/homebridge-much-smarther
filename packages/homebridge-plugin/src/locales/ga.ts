@@ -171,4 +171,5 @@ export const ga: Messages = {
     'Múchta go dtí go n-athraíonn an clár leibhéal, mar a dhéantar san aip. Má mhúchtar é, filleann an clár.',
   'ui.config.applyHint':
     'Cuirtear na hathruithe i bhfeidhm nuair a bhrúnn tú Sábháil ag bun na fuinneoige seo: atosaíonn Homebridge ansin.',
+  'ui.support': 'An maith leat an breiseán? Tacaigh leis ar Ko-fi',
 };

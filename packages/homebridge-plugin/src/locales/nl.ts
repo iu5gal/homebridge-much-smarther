@@ -170,4 +170,5 @@ export const nl: Messages = {
     'Uit tot het programma van niveau wisselt, zoals in de app. Als je hem uitzet, geldt het programma weer.',
   'ui.config.applyHint':
     'Wijzigingen worden toegepast als je onderaan dit venster op Opslaan klikt: Homebridge start daarna opnieuw op.',
+  'ui.support': 'Bevalt de plug-in? Steun hem op Ko-fi',
 };

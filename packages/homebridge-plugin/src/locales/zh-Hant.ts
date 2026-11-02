@@ -163,4 +163,5 @@ export const zhHant: Messages = {
   'ui.config.offSwitch': '「關閉至下次變更」開關',
   'ui.config.offSwitchHint': '關閉至程式切換溫度段，與 App 相同。關閉此開關即恢復程式。',
   'ui.config.applyHint': '按下此視窗底部的「儲存」後即套用變更：接著 Homebridge 會重新啟動。',
+  'ui.support': '喜歡這個外掛程式嗎？歡迎在 Ko-fi 上支持它',
 };

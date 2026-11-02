@@ -6,10 +6,15 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
+### Added
+
+- A link to support the project on Ko-fi, on the setup page (in every language), in the READMEs and in the package metadata.
+
 ### Changed
 
 - Documentation in English only, in fewer files: installation, setup and pairing, features, troubleshooting, and security in `SECURITY.md`.
 - The documentation makes clear that only the first-generation Smarther (X8000) is supported.
+- Tests run against Homebridge 2.5.0 and its hap-nodejs 2.3.0.
 
 ## [0.1.0] - 2026-11-02
 

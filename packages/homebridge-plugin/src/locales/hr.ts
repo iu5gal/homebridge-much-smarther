@@ -170,4 +170,5 @@ export const hr: Messages = {
     'Isključeno dok program ne promijeni razinu, kao u aplikaciji. Isključivanjem prekidača ponovno vrijedi program.',
   'ui.config.applyHint':
     'Promjene se primjenjuju kad pritisnete Spremi na dnu ovog prozora: Homebridge se zatim ponovno pokreće.',
+  'ui.support': 'Sviđa vam se dodatak? Podržite ga na Ko-fiju',
 };

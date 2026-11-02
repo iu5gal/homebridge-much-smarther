@@ -170,4 +170,5 @@ export const vi: Messages = {
     'Tắt cho đến khi chương trình đổi mức, như trong ứng dụng. Tắt công tắc sẽ quay lại chương trình.',
   'ui.config.applyHint':
     'Thay đổi được áp dụng khi bạn nhấn Lưu ở cuối cửa sổ này: sau đó Homebridge sẽ khởi động lại.',
+  'ui.support': 'Bạn thích plugin này? Hãy ủng hộ trên Ko-fi',
 };

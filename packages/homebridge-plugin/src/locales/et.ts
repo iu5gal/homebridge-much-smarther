@@ -170,4 +170,5 @@ export const et: Messages = {
     'Väljas, kuni programm taset vahetab, nagu rakenduses. Lüliti väljalülitamisel kehtib taas programm.',
   'ui.config.applyHint':
     'Muudatused rakenduvad, kui vajutad selle akna allosas nuppu Salvesta: seejärel Homebridge taaskäivitub.',
+  'ui.support': 'Kas lisandmoodul meeldib? Toeta seda Ko-fi kaudu',
 };

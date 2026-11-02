@@ -171,4 +171,5 @@ export const pt: Messages = {
     'Desligado até o programa mudar de nível, como na app. Desligá-lo volta ao programa.',
   'ui.config.applyHint':
     'As alterações aplicam-se quando premir Guardar no fundo desta janela: depois, o Homebridge reinicia.',
+  'ui.support': 'Gosta do plugin? Apoie-o no Ko-fi',
 };

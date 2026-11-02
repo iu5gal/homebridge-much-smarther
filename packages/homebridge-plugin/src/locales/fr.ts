@@ -171,4 +171,5 @@ export const fr: Messages = {
     'Arrêt jusqu’au prochain changement de niveau du programme, comme dans l’app. Le désactiver revient au programme.',
   'ui.config.applyHint':
     'Les modifications s’appliquent lorsque vous appuyez sur Enregistrer en bas de cette fenêtre\u00a0: Homebridge redémarre ensuite.',
+  'ui.support': 'Le plugin vous plaît\u00a0? Soutenez-le sur Ko-fi',
 };

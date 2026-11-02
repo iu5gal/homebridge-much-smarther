@@ -171,4 +171,5 @@ export const ms: Messages = {
     'Mati hingga program menukar tahap, seperti dalam aplikasi. Mematikan suis akan kembali kepada program.',
   'ui.config.applyHint':
     'Perubahan digunakan apabila anda menekan Simpan di bahagian bawah tetingkap ini: kemudian Homebridge dimulakan semula.',
+  'ui.support': 'Suka pemalam ini? Sokongnya di Ko-fi',
 };

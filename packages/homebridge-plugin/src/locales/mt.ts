@@ -170,4 +170,5 @@ export const mt: Messages = {
     'Mitfi sakemm il-programm ibiddel il-livell, bħal fl-app. Meta titfih, jerġa’ japplika l-programm.',
   'ui.config.applyHint':
     'Il-bidliet japplikaw meta tagħfas Issalva fil-qiegħ ta’ din it-tieqa: imbagħad Homebridge jerġa’ jibda.',
+  'ui.support': 'Jogħġbok il-plugin? Appoġġjah fuq Ko-fi',
 };

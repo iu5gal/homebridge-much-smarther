@@ -170,4 +170,5 @@ export const ro: Messages = {
     'Oprit până când programul schimbă nivelul, ca în aplicație. Când îl opriți, se revine la program.',
   'ui.config.applyHint':
     'Modificările se aplică atunci când apăsați Salvează în partea de jos a acestei ferestre: apoi Homebridge repornește.',
+  'ui.support': 'Vă place pluginul? Susțineți-l pe Ko-fi',
 };

@@ -169,4 +169,5 @@ export const sv: Messages = {
     'Av tills programmet byter nivå, som i appen. När du slår av den gäller programmet igen.',
   'ui.config.applyHint':
     'Ändringarna gäller när du trycker på Spara längst ned i det här fönstret: Homebridge startar sedan om.',
+  'ui.support': 'Gillar du pluginet? Stöd det på Ko-fi',
 };

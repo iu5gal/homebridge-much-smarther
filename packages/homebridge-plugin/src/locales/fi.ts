@@ -170,4 +170,5 @@ export const fi: Messages = {
     'Pois päältä, kunnes ohjelma vaihtaa tasoa, kuten sovelluksessa. Kytkimen sammuttaminen palauttaa ohjelman.',
   'ui.config.applyHint':
     'Muutokset tulevat voimaan, kun painat Tallenna tämän ikkunan alareunassa: Homebridge käynnistyy sen jälkeen uudelleen.',
+  'ui.support': 'Pidätkö lisäosasta? Tue sitä Ko-fissa',
 };

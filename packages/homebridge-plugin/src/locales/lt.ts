@@ -171,4 +171,5 @@ export const lt: Messages = {
     'Išjungta, kol programa pakeis lygį, kaip programėlėje. Išjungus jungiklį vėl galioja programa.',
   'ui.config.applyHint':
     'Pakeitimai pritaikomi paspaudus Išsaugoti šio lango apačioje: tada Homebridge paleidžiamas iš naujo.',
+  'ui.support': 'Patinka papildinys? Paremkite jį per Ko-fi',
 };
