@@ -6,7 +6,17 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
-## [0.1.3] - 2026-11-03
+## [0.1.4] - 2026-11-03
+
+The first version published to npm by the release workflow. Version 0.1.3 was tagged but never released: its workflow stopped before publishing anything.
+
+### Added
+
+- A project icon, also next to the README title.
+
+### Fixed
+
+- The release workflow passes the package file to `npm publish` as `./pack/…`: without `./`, npm read the path as a GitHub repository.
 
 ### Changed
 
