@@ -45,11 +45,11 @@ Then open `http://<pi-address>:8581` in a browser, for example `http://192.0.2.2
 
 ### From the Homebridge UI
 
-Once the plugin is published on npm: in the Homebridge UI, open **Plugins**, search for `homebridge-much-smarther` and install it. Homebridge asks to restart.
+In the Homebridge UI, open **Plugins**, search for `homebridge-much-smarther` and install it. Homebridge asks to restart.
 
 ### From a package file
 
-Until the plugin is on npm, download `homebridge-much-smarther-<version>.tgz` from the [releases page](https://github.com/iu5gal/much-smarther-bridge/releases). Copy it to the Pi, for example with `scp`, then on the Pi:
+Instead of the Homebridge UI, you can install the package attached to a release, for example to try a version by hand. Download `homebridge-much-smarther-<version>.tgz` from the [releases page](https://github.com/iu5gal/much-smarther-bridge/releases). Copy it to the Pi, for example with `scp`, then on the Pi:
 
 ```sh
 sudo install -d -o homebridge -g homebridge /var/lib/homebridge/local-packages

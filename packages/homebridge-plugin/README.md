@@ -1,5 +1,7 @@
 # homebridge-much-smarther
 
+![Much Smarther Bridge: the first-generation BTicino Smarther X8000 in Apple Home, over your local network](https://raw.githubusercontent.com/iu5gal/much-smarther-bridge/main/docs/images/social-preview.png)
+
 > **Only for the first-generation Smarther, model X8000.** The later Smarther2 with Netatmo is a different product and is not supported.
 
 Homebridge plugin for the **first-generation** BTicino Smarther thermostat, model **X8000**, over its local protocol: no cloud at runtime. It uses the client in [`@much-smarther/core`](https://github.com/iu5gal/much-smarther-bridge/blob/main/packages/core/README.md).
@@ -105,7 +107,7 @@ npm test                   # every test, the plugin's included
 npm run pack:plugin        # pack/homebridge-much-smarther-<version>.tgz, with the core inside
 ```
 
-The package is a single tarball: `scripts/pack-plugin.mjs` copies the compiled core into the plugin's `node_modules` and lists it in `bundleDependencies`, because npm does not bundle workspace packages by itself. It has no install scripts. Install it with `npm install <tarball>` in the Homebridge plugin directory, or from the Homebridge UI once it is published.
+The package is a single tarball: `scripts/pack-plugin.mjs` copies the compiled core into the plugin's `node_modules` and lists it in `bundleDependencies`, because npm does not bundle workspace packages by itself. It has no install scripts. The package on npm is this same tarball: install it from the Homebridge UI, or with `npm install <tarball>` in the Homebridge plugin directory.
 
 The plugin's tests use HAP-NodeJS and the simulator: mapping tables, the accessory, the control socket, the setup page requests and the platform from start to shutdown.
 

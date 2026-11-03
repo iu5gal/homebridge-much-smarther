@@ -94,9 +94,9 @@ Out of scope: an attacker with root on the Homebridge host, physical access to t
 - A committed pre-commit hook runs a personal denylist, kept outside the repository in `.git/info/personal-denylist`, and gitleaks on the staged changes. It refuses to commit when gitleaks is missing.
 - Documentation and tests use only placeholders (RFC 5737 addresses, `example.com`, fake passwords); test fixtures are synthetic or sanitised.
 - Before publication the full history is scanned, commit by commit, and the repository is published from a clean history.
-- Dependencies: two runtime dependencies (`@homebridge/plugin-ui-utils` and the project's own core, bundled). The lockfile is committed. `npm audit` runs in the local checks; Dependabot once published.
+- Dependencies: two runtime dependencies (`@homebridge/plugin-ui-utils` and the project's own core, bundled). The lockfile is committed. `npm audit` runs in the local checks and in CI; Dependabot alerts and security updates are on.
 - No install scripts in the package; it is installed with `--ignore-scripts`.
-- GitHub Actions pinned by commit SHA, with minimal permissions. Releases are published by npm trusted publishing with provenance: no npm token is stored.
+- GitHub Actions pinned by commit SHA, with minimal permissions. Releases are published to npm by the release workflow, through npm trusted publishing with provenance: no npm token is stored. The exception is 0.1.2, the first version on npm, published by hand from the release package because trusted publishing can only be set up for a package that already exists.
 
 ## 5. Residual risks
 
