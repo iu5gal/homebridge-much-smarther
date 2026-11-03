@@ -1,6 +1,6 @@
 ![Much Smarther Bridge: the first-generation BTicino Smarther X8000 in Apple Home, over your local network](docs/images/social-preview.png)
 
-# Much Smarther Bridge
+# <img src="docs/images/icon.png" alt="" width="40" height="40" align="absmiddle"> Much Smarther Bridge
 
 [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/iu5gal)
 
