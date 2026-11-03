@@ -6,9 +6,21 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-03
+
+### Changed
+
+- The plugin is on npm: install it from the Homebridge UI. From this version on, the release workflow publishes it to npm with provenance, through npm trusted publishing.
+- The npm page shows the project image, and the package has the `homebridge` and `homekit` keywords.
+- `@homebridge/plugin-ui-utils` 2.2.7.
+
+### Security
+
+- Development tools only: minimatch, used by eslint, is forced to 11.0.4 to fix a denial-of-service advisory (GHSA-g3hv-75wg-m249). The published package does not contain it and is not affected.
+
 ## [0.1.2] - 2026-11-02
 
-Not published on npm yet: install the package attached to this release.
+The first version on npm, published by hand on 2026-11-03 from the package attached to this release (without provenance).
 
 ### Changed
 
