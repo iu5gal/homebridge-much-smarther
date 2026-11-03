@@ -12,6 +12,20 @@ Requires Node.js 22, 24 or 26 and Homebridge 1.8 or later (tried with 1.11 and 2
 
 User guides: [installation](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/installation.md), [setup and pairing](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/setup.md), [features and limitations](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/features.md), [troubleshooting](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/troubleshooting.md), [security](https://github.com/iu5gal/much-smarther-bridge/blob/main/SECURITY.md).
 
+## Installation
+
+- **From the Homebridge UI:** open **Plugins**, search for `homebridge-much-smarther`, install it and restart Homebridge.
+- **With npm**, in Homebridge's own directory and as its user. With the official Debian package (Raspberry Pi and other Debian or Ubuntu machines):
+
+  ```sh
+  cd /var/lib/homebridge
+  sudo -u homebridge env PATH=/opt/homebridge/bin:/usr/bin:/bin HOME=/var/lib/homebridge \
+    npm --prefix /var/lib/homebridge install --ignore-scripts homebridge-much-smarther@latest
+  sudo systemctl restart homebridge
+  ```
+
+Then open the plugin's settings in the Homebridge UI: see [setup and pairing](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/setup.md). The full guide, with Homebridge itself, is the [installation guide](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/installation.md).
+
 | Commands | Thermostat settings |
 | --- | --- |
 | ![Setup page, Commands tab](https://raw.githubusercontent.com/iu5gal/much-smarther-bridge/main/docs/images/setup-commands.png) | ![Setup page, Thermostat tab](https://raw.githubusercontent.com/iu5gal/much-smarther-bridge/main/docs/images/setup-thermostat.png) |

@@ -30,7 +30,7 @@ The first version published to npm by the release workflow. Version 0.1.3 was ta
 
 ## [0.1.2] - 2026-11-02
 
-The first version on npm, published by hand on 2026-11-03 from the package attached to this release (without provenance).
+The first version on npm, published by hand on 2026-11-03 from the package attached to this release (without provenance). Later versions are published by the release workflow, with provenance.
 
 ### Changed
 

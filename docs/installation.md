@@ -47,6 +47,22 @@ Then open `http://<pi-address>:8581` in a browser, for example `http://192.0.2.2
 
 In the Homebridge UI, open **Plugins**, search for `homebridge-much-smarther` and install it. Homebridge asks to restart.
 
+### From the command line, with npm
+
+The same package from npm, without the Homebridge UI. On the Pi:
+
+```sh
+cd /var/lib/homebridge
+sudo -u homebridge env PATH=/opt/homebridge/bin:/usr/bin:/bin HOME=/var/lib/homebridge \
+  npm --prefix /var/lib/homebridge install --ignore-scripts homebridge-much-smarther@latest
+sudo systemctl restart homebridge
+```
+
+- The command uses Homebridge's own Node.js and npm, as the `homebridge` user, so that the files belong to it.
+- `--ignore-scripts` is a precaution; the package has no install scripts.
+- To install a given version, replace `latest` with it, for example `homebridge-much-smarther@0.1.4`.
+- Each version on npm since 0.1.4 is built and published by the project's release workflow, with [provenance](https://docs.npmjs.com/generating-provenance-statements): its npm page links it to the source and the build that produced it.
+
 ### From a package file
 
 Instead of the Homebridge UI, you can install the package attached to a release, for example to try a version by hand. Download `homebridge-much-smarther-<version>.tgz` from the [releases page](https://github.com/iu5gal/much-smarther-bridge/releases). Copy it to the Pi, for example with `scp`, then on the Pi:
@@ -61,8 +77,7 @@ sudo systemctl restart homebridge
 ```
 
 - The file stays in `local-packages`: npm records its path, and later installs need it.
-- `--ignore-scripts` is a precaution; the package has no install scripts.
-- The command uses Homebridge's own Node.js and npm, as the `homebridge` user, so that the files belong to it.
+- `--ignore-scripts` and the `homebridge` user: as in the npm command above.
 
 ### Main bridge or child bridge
 
@@ -101,7 +116,9 @@ The plugin notices a lost connection within 10 s. The Home app shows "No respons
 ## Updating
 
 - From the Homebridge UI: **Plugins**, then update.
+- From the command line: run the [npm command](#from-the-command-line-with-npm) again, then restart Homebridge.
 - From a package file: copy the new file and run the same `npm install` command with the new name, then restart Homebridge. You can delete the old file from `local-packages` afterwards.
+- From a package file to npm: install from the Homebridge UI or with the npm command. npm replaces the file's path with the npm version; then delete the file from `local-packages`.
 
 ## Uninstalling
 
