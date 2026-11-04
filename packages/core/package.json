@@ -1,6 +1,6 @@
 {
   "name": "@much-smarther/core",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "description": "XOpen v3 client for the BTicino Smarther X8000 (no Homebridge dependency)",
   "license": "MIT",

@@ -6,6 +6,13 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-04
+
+### Fixed
+
+- `config.schema.json` lists the required settings (`name`, `host`) as an array at object level, as JSON Schema requires, instead of `"required": true` on each field.
+- The package declares the `supports-hap` keyword: it publishes its accessories over HomeKit (HAP) only, and does not register Matter accessories itself.
+
 ## [0.1.4] - 2026-11-03
 
 The first version published to npm by the release workflow. Version 0.1.3 was tagged but never released: its workflow stopped before publishing anything.
