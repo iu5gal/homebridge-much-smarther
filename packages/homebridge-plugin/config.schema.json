@@ -6,20 +6,19 @@
   "headerDisplay": "Unofficial local bridge for the BTicino Smarther X8000. Not affiliated with BTicino or Legrand.",
   "schema": {
     "type": "object",
+    "required": ["name", "host"],
     "properties": {
       "name": {
         "title": "Name in the Home app",
         "type": "string",
         "default": "Smarther",
-        "maxLength": 64,
-        "required": true
+        "maxLength": 64
       },
       "host": {
         "title": "Thermostat address",
         "type": "string",
         "placeholder": "192.0.2.10",
-        "maxLength": 253,
-        "required": true
+        "maxLength": 253
       },
       "port": {
         "title": "Port",
