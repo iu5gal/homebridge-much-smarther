@@ -47,23 +47,23 @@ To keep the boiler off, use setpoints **below** the room temperature, except whe
 - [ ] Optional, if the heating protection temperature is raised above 7 °C in the app first: `manual <between 7 and the protection temperature>`. What does the device do with a setpoint below its protection temperature? Restore the protection temperature afterwards.
 - [ ] With `npm run session` open instead: open the app's manual screen while in `AUTOMATIC`, note the end it proposes, change only the temperature and confirm. Compare the end of the window with the time slots of the active program (`npm run files` beforehand): it should be the next change of level, not the next slot boundary.
 
-## 4. Resilience (Phase 4 onwards)
+## 4. Resilience
 
 - [ ] Restart of the thermostat (power cycle): the bridge reconnects by itself.
 - [ ] Restart of Homebridge and of the Raspberry Pi.
 - [ ] Wi-Fi drop of the thermostat for a few minutes.
 - [ ] Other services on the Pi keep working.
 
-## 5. Apple Home (Phase 3 trial, then Phase 5)
+## 5. Apple Home
 
-With a temporary Homebridge on the development machine first (Phase 3), then on the Pi (Phase 5). The checks of §2 and §3 must not run at the same time: the plugin holds the only local session.
+With a temporary Homebridge on the development machine first, then on the Pi. The checks of §2 and §3 must not run at the same time: the plugin holds the only local session.
 
 - [ ] Pairing: the bridge appears in the Home app and the thermostat accessory comes with its services, named in the configured language.
 - [ ] Room temperature, humidity and "heating" follow the thermostat within a few seconds of a change on the panel or in the app.
 - [ ] Moving the target temperature slider sends one command only, after the slider stops; the BTicino app shows "manual" with the end it would have proposed itself.
 - [ ] "Off" switches the thermostat off as the app does; "Heat" from "Off" brings back the last temperature.
 - [ ] Prototype A (`automaticMode: "auto"`): "Auto" returns to the program, and shows as such when the program is resumed in the app.
-- [ ] Prototype B (`automaticMode: "switch"`): the "Schedule" switch does the same. (Compared in Phase 3: "Auto" was chosen; B stays an option.)
+- [ ] Prototype B (`automaticMode: "switch"`): the "Schedule" switch does the same. (Compared during development: "Auto" was chosen; B stays an option.)
 - [ ] Boost switches: one at a time; switching the active one off returns to the program; a boost started on the panel shows on the right switch.
 - [ ] Program switches (`programSwitches`): one per chosen program, named as in the app; turning one on runs it; a program chosen in the app shows on the right switch.
 - [ ] "Off until next change" switch (`offSwitch`): the app shows off until the time it would propose; switching it off returns to the program.

@@ -12,7 +12,7 @@ Every statement below is tagged with where it comes from:
 | **[OBS]** | Observed on a real device by this project. |
 | **[ASM]** | Our assumption. The library is written to tolerate it being wrong. |
 
-Phase 1 of the project replaces **[PA]** and **[ASM]** tags with **[OBS]** as observations come in. Observations so far come from one X8000 (first generation).
+**[OBS]** tags replace **[PA]** and **[ASM]** as observations come in. Observations so far come from one X8000 (first generation).
 
 ## 1. Transport
 
@@ -290,7 +290,7 @@ Notes:
 - The response contains personal data (installation names, MAC addresses). Treat it like the PswOpen itself.
 - The PswOpen is probably also what the thermostat and the app use towards the BTicino cloud **[ASM]**. A leaked PswOpen may therefore give more than LAN access: protect it accordingly.
 
-## 9. Open questions for Phase 1
+## 9. Open questions
 
 - Whether the checksum of the configuration file is really that of the last version the app wrote (§5.2).
 - Length of `Ra` (not recorded: captures redact it).
