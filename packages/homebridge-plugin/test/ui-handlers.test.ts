@@ -78,6 +78,7 @@ describe('setup UI handlers', () => {
       ['conflict', 'ui.error.program-conflict'],
       ['full', 'ui.error.program-full'],
       ['in-use', 'ui.error.program-in-use'],
+      ['name-taken', 'ui.error.program-name-taken'],
       ['no-version', 'ui.error.program-no-version'],
       ['program-write', 'ui.error.program-write'],
       ['invalid', 'ui.error.invalid'],

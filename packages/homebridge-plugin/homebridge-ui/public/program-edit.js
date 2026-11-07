@@ -186,11 +186,26 @@ export function canSave(draft, maxSlots) {
 }
 
 /**
- * A name for the copy of a program, with a 2 at the end. Separators become spaces.
- * @param {string | undefined} name
+ * Whether another program has this name already. "Casa" and "casa" count as the same.
+ * @param {string} name the name to save
+ * @param {readonly (string | undefined)[]} others the names of the other programs
  */
-export function nameForCopy(name) {
+export function nameIsTaken(name, others) {
+  const wanted = name.toLowerCase();
+  return others.some((other) => other?.toLowerCase() === wanted);
+}
+
+/**
+ * A free name for the copy of a program, with a number at the end. Separators become spaces.
+ * @param {string | undefined} name
+ * @param {readonly (string | undefined)[]} [taken] the names already in use
+ */
+export function nameForCopy(name, taken = []) {
   const clean = cleanName((name ?? '').replace(/[^\p{L}\p{M}\p{N} ]/gu, ' '));
   if (clean === '') return '';
-  return `${clean.slice(0, NAME_MAX - 2).trim()} 2`;
+  for (let number = 2; ; number++) {
+    const suffix = ` ${number}`;
+    const candidate = `${clean.slice(0, NAME_MAX - suffix.length).trim()}${suffix}`;
+    if (!nameIsTaken(candidate, taken)) return candidate;
+  }
 }

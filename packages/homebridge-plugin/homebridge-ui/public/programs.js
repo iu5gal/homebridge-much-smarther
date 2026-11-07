@@ -1,5 +1,6 @@
 // The Programs tab of the setup UI: the temperatures, one line per program, and
-// the editor, which opens under the chosen program with the whole week in view.
+// under each open line its editor, with the whole week in view. Several can be
+// open at once; the program in use opens by itself.
 // All dynamic text is set with textContent: program names are typed by users.
 // A program goes to the plugin only as values, which it validates again.
 import { drawIcons } from './icons.js';
@@ -11,6 +12,7 @@ import {
   mergedDay,
   NAME_MAX,
   nameForCopy,
+  nameIsTaken,
   nameToSave,
   newProgramDays,
   QUARTERS,
@@ -34,11 +36,16 @@ const AXIS = ['0', '6', '12', '18', '24'];
 export function createProgramsTab(page) {
   const { $, t, element, call, locale } = page;
   let view = { programs: [], versions: [], maxSlotsPerDay: 10 };
-  /** What is being edited: { number?, version?, existingName?, name, days, selected, original }. */
-  let editing;
-  /** Days just copied over, shown with a short flash. */
-  let flashing = [];
+  /** One line per program on the thermostat: { number, node, row, editor? }. */
+  const lines = new Map();
+  /** New programs being written, not on the thermostat yet: lines without a number. */
+  const drafts = new Set();
+  const opening = new Set();
+  /** The program in use the last time it was opened by itself. */
+  let lastInUse;
 
+  const inUseNumber = () => page.snapshot()?.state?.programNumber;
+  const programCount = () => view.programs.length + drafts.size;
   const levelName = (preset) => t(`ui.level.${preset.toLowerCase()}`);
   const levelTemperature = (preset) => {
     const snapshot = page.snapshot();
@@ -62,42 +69,62 @@ export function createProgramsTab(page) {
     return node;
   }
 
+  function levelDot(preset) {
+    const dot = element('span', undefined, 'ms-dot-level');
+    dot.dataset.level = preset;
+    return dot;
+  }
+
   // -------------------------------------------------------------------------
   // The temperatures and the list
 
   function drawLevels() {
     $('ms-program-levels').replaceChildren(
       ...LEVELS.map((preset) => {
-        const tile = element('div', undefined, 'ms-level-tile');
-        tile.dataset.level = preset;
-        tile.append(element('small', levelName(preset)), element('strong', page.degrees(levelTemperature(preset))));
-        return tile;
+        const item = element('span', undefined, 'ms-temp');
+        item.append(levelDot(preset), element('small', levelName(preset)), element('span', page.degrees(levelTemperature(preset))));
+        return item;
       }),
     );
   }
 
+  /** Updates the list around what is open: an editor stays as it is, whatever arrives from the thermostat. */
   function drawList() {
     drawLevels();
     drawVersions();
-    // An open editor stays as it is, whatever arrives from the thermostat.
-    if (editing) return;
-    const full = view.programs.length >= MAX_PROGRAMS;
+    const full = programCount() >= MAX_PROGRAMS;
     $('ms-program-new').disabled = full;
     $('ms-program-new').title = full ? t('ui.error.program-full') : '';
-    const active = page.snapshot()?.state?.programNumber;
-    $('ms-programs').replaceChildren(
-      ...(view.programs.length === 0 ? [element('p', t('ui.program.none'), 'ms-hint mt-2 mb-0')] : []),
-      ...view.programs.map((program) => programLine(program, program.number === active)),
-    );
+    const active = inUseNumber();
+    for (const program of view.programs) {
+      let line = lines.get(program.number);
+      if (!line) {
+        line = { number: program.number, node: element('div', undefined, 'ms-program'), row: element('div', undefined, 'ms-program-row') };
+        line.node.append(line.row);
+        lines.set(program.number, line);
+      }
+      drawLine(line, program, program.number === active);
+    }
+    for (const [number, line] of lines) {
+      const gone = !view.programs.some((program) => program.number === number);
+      if (gone && !line.editor?.isDirty()) lines.delete(number);
+    }
+    const wanted = [...drafts].map((line) => line.node);
+    for (const line of [...lines.values()].sort((a, b) => a.number - b.number)) wanted.push(line.node);
+    const list = $('ms-programs');
+    if (wanted.length === 0) {
+      list.replaceChildren(element('p', t('ui.program.none'), 'ms-hint mt-2 mb-0'));
+    } else if (wanted.length !== list.children.length || wanted.some((node, index) => list.children[index] !== node)) {
+      // Only when something moved: replacing the nodes would take the focus from a field being typed in.
+      list.replaceChildren(...wanted);
+    }
+    for (const line of [...lines.values(), ...drafts]) line.editor?.refresh();
   }
 
-  function programLine(program, inUse) {
-    const item = element('div', undefined, `ms-program${inUse ? ' in-use' : ''}`);
-    item.dataset.number = String(program.number);
-    const row = element('div', undefined, 'ms-program-row');
+  function drawLine(line, program, inUse) {
     const name = element('button', program.name ?? String(program.number), 'ms-program-name');
     name.type = 'button';
-    name.addEventListener('click', () => void openExisting(program.number));
+    name.addEventListener('click', () => void toggle(line));
     const choice = element('button', undefined, `ms-choice${inUse ? ' active' : ''}`);
     choice.type = 'button';
     choice.setAttribute('aria-pressed', String(inUse));
@@ -110,12 +137,38 @@ export function createProgramsTab(page) {
       choice.append(element('span', t('ui.program.use')));
       choice.addEventListener('click', () => page.command({ action: 'auto', program: program.number }));
     }
-    const edit = button(t('ui.program.edit'), 'pencil', 'ms-btn ms-btn-small ms-program-edit');
-    edit.setAttribute('aria-label', t('ui.program.edit'));
-    edit.addEventListener('click', () => void openExisting(program.number));
-    row.append(name, choice, edit);
-    item.append(row);
-    return item;
+    const open = Boolean(line.editor);
+    const text = t(open ? 'ui.program.close' : 'ui.program.edit');
+    const edit = button(text, open ? 'up' : 'pencil', 'ms-btn ms-btn-quiet ms-program-toggle');
+    edit.setAttribute('aria-label', text);
+    edit.setAttribute('aria-expanded', String(open));
+    edit.addEventListener('click', () => void toggle(line));
+    line.program = program;
+    line.row.replaceChildren(name, choice, edit);
+  }
+
+  function redrawLine(line) {
+    if (line.program) drawLine(line, line.program, line.number === inUseNumber());
+  }
+
+  async function toggle(line) {
+    if (line.editor) closeEditor(line, true);
+    else await openExisting(line.number);
+  }
+
+  /** Closes an editor, asking first if `ask` and something would be lost. */
+  function closeEditor(line, ask) {
+    if (ask && line.editor?.isDirty() && !window.confirm(t('ui.program.discard'))) return false;
+    line.editor?.node.remove();
+    line.editor = undefined;
+    if (drafts.delete(line)) {
+      line.node.remove();
+      drawList();
+    } else {
+      redrawLine(line);
+      if (!view.programs.some((program) => program.number === line.number)) drawList();
+    }
+    return true;
   }
 
   function drawVersions() {
@@ -135,6 +188,18 @@ export function createProgramsTab(page) {
     );
   }
 
+  /** The program in use is open by itself. When another takes over, the old one closes, unless opened by hand or changed. */
+  function followInUse() {
+    const active = inUseNumber();
+    if (active === undefined || active === lastInUse) return;
+    if (active !== 0 && !lines.has(active)) return; // not read yet
+    const previous = lines.get(lastInUse);
+    lastInUse = active;
+    if (previous?.editor?.auto && !previous.editor.isDirty()) closeEditor(previous, false);
+    const line = lines.get(active);
+    if (line && !line.editor) void openExisting(active, true);
+  }
+
   /** Reads the list again. A plugin that is not running already shows its own message. */
   async function load() {
     try {
@@ -143,6 +208,7 @@ export function createProgramsTab(page) {
       return;
     }
     drawList();
+    followInUse();
   }
 
   /** Runs a change on the thermostat with the page waiting, then shows the result. */
@@ -166,343 +232,335 @@ export function createProgramsTab(page) {
 
   async function restoreVersion(version, name, time) {
     if (!window.confirm(t('ui.program.restoreConfirm', { name, time }))) return;
-    if (await change('/program/restore', { number: version.number, id: version.id }, t('ui.program.restored'))) await afterChange();
+    if (!(await change('/program/restore', { number: version.number, id: version.id }, t('ui.program.restored')))) return;
+    const line = lines.get(version.number);
+    if (line?.editor) closeEditor(line, false);
+    await afterChange();
+    if (version.number === inUseNumber()) await openExisting(version.number, true);
   }
 
   // -------------------------------------------------------------------------
-  // The editor
+  // Opening
 
-  /** Opens the editor under its program, or at the top for a new one. The other lines wait. */
-  function open(draft) {
-    editing = { selected: DAYS[0], ...draft };
-    editing.original = JSON.stringify([editing.name, editing.days]);
-    flashing = [];
-    const list = $('ms-programs');
-    let item = list.querySelector(`[data-number="${editing.number}"]`);
-    if (editing.number === undefined) {
-      item = element('div', undefined, 'ms-program');
-      const row = element('div', undefined, 'ms-program-row');
-      row.append(element('span', t('ui.program.new'), 'ms-program-name'));
-      item.append(row);
-      list.prepend(item);
-    }
-    const body = element('div', undefined, 'ms-program-body');
-    body.id = 'ms-program-editor';
-    item.append(body);
-    item.querySelector('.ms-btn')?.classList.add('ms-hidden');
-    for (const other of list.querySelectorAll('.ms-program')) other.inert = other !== item;
-    $('ms-program-new').disabled = true;
-    drawEditor();
-    if (editing.name === '') $('ms-program-name').focus();
-    item.scrollIntoView?.({ block: 'nearest' });
-  }
-
-  function close() {
-    editing = undefined;
-    drawList();
-  }
-
-  async function readProgram(number) {
-    homebridge.showSpinner();
+  /** Reads the program now, since it may have changed in the app. On its own it says nothing if that fails. */
+  async function openExisting(number, auto = false) {
+    if (opening.has(number)) return;
+    opening.add(number);
+    if (!auto) homebridge.showSpinner();
     try {
-      return await call('/program/read', { number });
+      const program = await (auto ? homebridge.request('/program/read', { number }) : call('/program/read', { number }));
+      const line = lines.get(number);
+      if (!line || line.editor) return;
+      line.editor = createEditor(line, {
+        number,
+        version: program.version,
+        ...(program.name === undefined ? {} : { existingName: program.name }),
+        name: program.name ?? '',
+        days: program.days,
+        auto,
+      });
+      line.node.append(line.editor.node);
+      redrawLine(line);
     } catch {
-      return undefined;
+      // `call` has shown the error. Nothing to open.
     } finally {
-      homebridge.hideSpinner();
+      opening.delete(number);
+      if (!auto) homebridge.hideSpinner();
     }
   }
 
-  async function openExisting(number) {
-    if (editing) return;
-    const program = await readProgram(number);
-    if (!program) return;
-    open({
-      number,
-      version: program.version,
-      ...(program.name === undefined ? {} : { existingName: program.name }),
-      name: program.name ?? '',
-      days: program.days,
-    });
+  function openNew(name, days) {
+    const line = { node: element('div', undefined, 'ms-program'), row: element('div', undefined, 'ms-program-row') };
+    line.row.append(element('span', t('ui.program.new'), 'ms-program-name'));
+    line.editor = createEditor(line, { name, days });
+    line.node.append(line.row, line.editor.node);
+    drafts.add(line);
+    drawList();
+    line.editor.focusName();
+    line.node.scrollIntoView?.({ block: 'nearest' });
   }
 
-  const isDirty = () => JSON.stringify([editing.name, editing.days]) !== editing.original;
-  const editingInUse = () => editing.number !== undefined && editing.number === page.snapshot()?.state?.programNumber;
+  // -------------------------------------------------------------------------
+  // One editor. Each has its own program, with its own changes.
 
-  /** Leaves the editor, asking first if something would be lost. */
-  function leave() {
-    if (isDirty() && !window.confirm(t('ui.program.discard'))) return false;
-    close();
-    return true;
-  }
+  function createEditor(line, draft) {
+    const state = { selected: DAYS[0], ...draft };
+    const original = JSON.stringify([state.name, state.days]);
+    const isDirty = () => JSON.stringify([state.name, state.days]) !== original;
+    /** Days just copied over, shown with a short flash. */
+    let flashing = [];
+    const inUse = () => state.number !== undefined && state.number === inUseNumber();
+    const otherNames = () => view.programs.filter((program) => program.number !== state.number).map((program) => program.name);
+    const savedName = () => nameToSave(state.name, state.existingName);
+    const nameClash = () => savedName() !== state.existingName && nameIsTaken(savedName(), otherNames());
 
-  function drawEditor() {
-    const body = $('ms-program-editor');
-    const nameBox = element('div', undefined, 'mt-2 mb-3');
-    const nameLabel = element('label', t('ui.program.name'), 'form-label mb-1');
-    nameLabel.htmlFor = 'ms-program-name';
-    const nameInput = element('input', undefined, 'form-control');
-    nameInput.id = 'ms-program-name';
+    const node = element('div', undefined, 'ms-program-body');
+    const nameInput = element('input', undefined, 'form-control ms-program-name-field');
     nameInput.dir = 'auto';
     nameInput.autocomplete = 'off';
-    nameInput.value = editing.name;
+    nameInput.value = state.name;
+    nameInput.placeholder = t('ui.program.name');
+    nameInput.setAttribute('aria-label', t('ui.program.name'));
     // A name already on the thermostat can be longer than a new one, and must still show whole.
-    nameInput.maxLength = Math.max(NAME_MAX, editing.existingName?.length ?? 0);
-    const nameHint = element('div', undefined, 'ms-hint mt-1');
-    nameHint.id = 'ms-program-name-hint';
+    nameInput.maxLength = Math.max(NAME_MAX, state.existingName?.length ?? 0);
+    const nameHint = element('div', undefined, 'ms-small-hint');
+    const nameBox = element('div', undefined, 'ms-editor-name');
+    nameBox.append(nameInput, nameHint);
     nameInput.addEventListener('input', () => {
-      editing.name = nameInput.value;
+      state.name = nameInput.value;
       drawName();
       drawSaveButton();
     });
-    nameBox.append(nameLabel, nameInput, nameHint);
 
-    const chooseDay = element('div', t('ui.program.chooseDay'), 'ms-label mb-1');
     const weekBox = element('div');
-    weekBox.id = 'ms-program-week';
     const dayBox = element('div', undefined, 'ms-program-day');
-    dayBox.id = 'ms-program-day';
+    const note = element('div', t('ui.program.activeHint'), 'ms-note');
 
-    const footer = element('div', undefined, 'ms-editor-footer');
-    if (editingInUse()) footer.append(element('div', t('ui.program.activeHint'), 'alert alert-warning py-2 mb-2'));
-    const actions = element('div', undefined, 'ms-editor-actions');
+    const remove = button(t('ui.program.delete'), 'trash', 'ms-btn ms-btn-quiet ms-editor-delete');
+    remove.addEventListener('click', () => void removeProgram());
+    const duplicate = button(t('ui.program.duplicate'), 'copy', 'ms-btn ms-btn-quiet ms-editor-duplicate');
+    duplicate.addEventListener('click', () => openNew(nameForCopy(state.name, view.programs.map((program) => program.name)), state.days));
+    const cancel = button(t('ui.picker.cancel'), undefined, 'ms-btn ms-btn-quiet ms-editor-cancel');
+    cancel.addEventListener('click', () => closeEditor(line, true));
+    const save = button(t('ui.program.save'), undefined, 'ms-btn ms-btn-primary ms-editor-save');
+    save.addEventListener('click', () => void saveProgram());
+
     const side = element('div', undefined, 'ms-editor-side');
-    if (editing.number !== undefined) side.append(duplicateButton(), deleteButton());
+    if (state.number !== undefined) side.append(duplicate, remove);
     const main = element('div', undefined, 'ms-editor-side ms-editor-main');
-    const cancel = button(t('ui.picker.cancel'), undefined, 'ms-btn ms-btn-quiet');
-    cancel.addEventListener('click', () => leave());
-    const save = button(t('ui.program.save'), undefined, 'ms-btn ms-btn-primary');
-    save.id = 'ms-program-save';
-    save.addEventListener('click', () => void saveEditing());
     main.append(cancel, save);
+    const actions = element('div', undefined, 'ms-editor-actions');
     actions.append(side, main);
-    footer.append(actions);
+    node.append(nameBox, weekBox, dayBox, note, actions);
 
-    body.replaceChildren(nameBox, chooseDay, weekBox, dayBox, footer);
-    drawName();
-    drawWeekAndDay();
-  }
-
-  function duplicateButton() {
-    const node = button(t('ui.program.duplicate'), 'copy', 'ms-btn ms-btn-small ms-btn-quiet');
-    node.disabled = view.programs.length >= MAX_PROGRAMS;
-    if (node.disabled) node.title = t('ui.error.program-full');
-    node.addEventListener('click', () => {
-      const { name, days } = editing;
-      if (!leave()) return;
-      open({ name: nameForCopy(name), days });
-    });
-    return node;
-  }
-
-  function deleteButton() {
-    const node = button(t('ui.program.delete'), 'trash', 'ms-btn ms-btn-small ms-btn-quiet');
-    node.disabled = editingInUse();
-    if (node.disabled) node.title = t('ui.error.program-in-use');
-    node.addEventListener('click', async () => {
-      const name = editing.existingName ?? String(editing.number);
-      if (!window.confirm(t('ui.program.deleteConfirm', { name }))) return;
-      if (!(await change('/program/delete', { number: editing.number }, t('ui.program.deleted')))) return;
-      editing = undefined;
-      await afterChange();
-    });
-    return node;
-  }
-
-  function drawName() {
-    const saved = nameToSave(editing.name, editing.existingName);
-    const hint = $('ms-program-name-hint');
-    const changed = saved !== '' && saved !== editing.name;
-    hint.textContent = changed ? t('ui.program.savedAs', { name: saved }) : t('ui.program.nameHint', { max: NAME_MAX });
-    $('ms-program-name').classList.toggle('is-invalid', editing.name !== '' && saved === '');
-  }
-
-  /** Nothing to save until something changed: every write goes to the thermostat's flash memory. */
-  function drawSaveButton() {
-    const unchanged = editing.number !== undefined && !isDirty();
-    $('ms-program-save').disabled = unchanged || !canSave(editing, view.maxSlotsPerDay);
-  }
-
-  function week() {
-    const box = element('div', undefined, 'ms-week');
-    for (const day of DAYS) {
-      const row = element('button', undefined, `ms-week-row${day === editing.selected ? ' active' : ''}${flashing.includes(day) ? ' ms-flash' : ''}`);
-      row.type = 'button';
-      row.setAttribute('aria-pressed', String(day === editing.selected));
-      row.append(element('span', dayName(day, 'short'), 'ms-week-day'), dayBar(editing.days[day] ?? []));
-      row.addEventListener('click', () => {
-        editing.selected = day;
-        drawWeekAndDay();
-      });
-      box.append(row);
+    function drawName() {
+      const saved = savedName();
+      const clash = nameClash();
+      const changed = saved !== '' && saved !== state.name;
+      nameHint.textContent = clash
+        ? t('ui.error.program-name-taken')
+        : changed
+          ? t('ui.program.savedAs', { name: saved })
+          : t('ui.program.nameHint', { max: NAME_MAX });
+      nameHint.classList.toggle('ms-bad', clash);
+      nameInput.classList.toggle('is-invalid', clash || (state.name !== '' && saved === ''));
     }
-    const axis = element('div', undefined, 'ms-week-axis');
-    const hours = element('span', undefined, 'ms-axis-hours');
-    hours.append(...AXIS.map((hour) => element('small', hour)));
-    axis.append(element('span'), hours);
-    box.append(axis);
-    return box;
-  }
 
-  /** One day as a bar of coloured stretches. They follow the direction of the language. */
-  function dayBar(slots) {
-    const bar = element('span', undefined, 'ms-bar');
-    for (const stretch of stretches(slots)) {
-      const part = element('span', undefined, 'ms-stretch');
-      part.dataset.level = stretch.preset;
-      part.style.flexGrow = String(stretch.minutes);
-      part.title = `${stretch.from}–${stretch.to} ${levelText(stretch.preset)}`;
-      bar.append(part);
+    /** Nothing to save until something changed: every write goes to the thermostat's flash memory. */
+    function drawSaveButton() {
+      const unchanged = state.number !== undefined && !isDirty();
+      save.disabled = unchanged || nameClash() || !canSave(state, view.maxSlotsPerDay);
     }
-    return bar;
-  }
 
-  /** Everything that depends on the slots. Called after each change to them. */
-  function drawWeekAndDay() {
-    $('ms-program-week').replaceChildren(week());
-    flashing = [];
-    drawDay();
-    drawSaveButton();
-  }
-
-  function setSlots(slots) {
-    editing.days = { ...editing.days, [editing.selected]: slots };
-    drawWeekAndDay();
-  }
-
-  function drawDay() {
-    const { selected } = editing;
-    const slots = editing.days[selected];
-    const add = button(t('ui.program.addSlot'), 'plus', 'ms-add');
-    const atLimit = mergedDay(slots).length >= view.maxSlotsPerDay;
-    add.disabled = atLimit;
-    add.addEventListener('click', () => setSlots(withSlotAdded(slots)));
-    const problems = dayProblems(slots, view.maxSlotsPerDay);
-    const notes = [];
-    if (problems.sameTime) notes.push(element('div', t('ui.program.sameTime'), 'ms-problem'));
-    if (problems.tooMany) notes.push(element('div', t('ui.program.slotLimit', { max: view.maxSlotsPerDay }), 'ms-problem'));
-    $('ms-program-day').replaceChildren(
-      element('div', dayName(selected, 'long'), 'ms-program-day-title'),
-      ...slots.map((slot, index) => slotRow(slots, slot, index)),
-      ...notes,
-      add,
-      ...(atLimit && !problems.tooMany ? [element('div', t('ui.program.slotLimit', { max: view.maxSlotsPerDay }), 'ms-hint mt-1')] : []),
-      copyRow(),
-    );
-  }
-
-  function slotRow(slots, slot, index) {
-    const row = element('div', undefined, 'ms-slot');
-    row.dataset.level = slot.preset;
-    row.append(element('span', t('ui.program.from')));
-    if (index === 0) {
-      const time = element('span', slot.time, 'ms-slot-time ms-fixed');
-      time.dir = 'ltr';
-      row.append(time);
-    } else {
-      const [hour = '00', minute = '00'] = slot.time.split(':');
-      const hours = select(HOURS, hour, t('ui.picker.hour'));
-      const quarters = select(QUARTERS.includes(minute) ? QUARTERS : [...QUARTERS, minute], minute, t('ui.picker.minute'));
-      const onTime = () => setSlots(withTime(slots, index, `${hours.value}:${quarters.value}`));
-      hours.addEventListener('change', onTime);
-      quarters.addEventListener('change', onTime);
-      const same = slots.some((other, position) => position !== index && other.time === slot.time);
-      hours.classList.toggle('is-invalid', same);
-      quarters.classList.toggle('is-invalid', same);
-      const time = element('span', undefined, 'ms-slot-time');
-      time.dir = 'ltr';
-      time.append(hours, element('span', ':'), quarters);
-      row.append(time);
+    /** What depends on the thermostat rather than on this editor. */
+    function refresh() {
+      note.classList.toggle('ms-hidden', !inUse());
+      remove.disabled = inUse();
+      remove.title = inUse() ? t('ui.error.program-in-use') : '';
+      duplicate.disabled = programCount() >= MAX_PROGRAMS;
+      duplicate.title = duplicate.disabled ? t('ui.error.program-full') : '';
+      drawName();
+      drawSaveButton();
     }
-    row.append(levelButtons(slot.preset, (preset) => setSlots(withLevel(slots, index, preset))));
-    if (index > 0) {
-      const remove = button(undefined, 'close', 'ms-icon-btn ms-slot-remove');
-      remove.setAttribute('aria-label', t('ui.program.removeSlot'));
-      remove.title = t('ui.program.removeSlot');
-      remove.addEventListener('click', () => setSlots(withSlotRemoved(slots, index)));
-      row.append(remove);
-    } else {
-      row.append(element('span', undefined, 'ms-slot-spacer'));
-    }
-    return row;
-  }
 
-  /** One button for each temperature, in its colour. The temperature tells them apart without the colour too. */
-  function levelButtons(current, onPick) {
-    const group = element('div', undefined, 'ms-levels');
-    group.setAttribute('role', 'radiogroup');
-    group.setAttribute('aria-label', t('ui.program.level'));
-    for (const preset of LEVELS) {
-      const temperature = levelTemperature(preset);
-      const node = element('button', temperature === undefined ? levelName(preset) : page.degrees(temperature), 'ms-level');
-      node.type = 'button';
-      node.dataset.level = preset;
-      node.setAttribute('role', 'radio');
-      node.setAttribute('aria-checked', String(preset === current));
-      node.setAttribute('aria-label', levelText(preset));
-      node.title = levelText(preset);
-      if (preset !== current) node.addEventListener('click', () => onPick(preset));
-      group.append(node);
+    function week() {
+      const box = element('div', undefined, 'ms-week');
+      for (const day of DAYS) {
+        const row = element('button', undefined, `ms-week-row${day === state.selected ? ' active' : ''}${flashing.includes(day) ? ' ms-flash' : ''}`);
+        row.type = 'button';
+        row.setAttribute('aria-pressed', String(day === state.selected));
+        row.append(element('span', dayName(day, 'short'), 'ms-week-day'), dayBar(state.days[day] ?? []));
+        row.addEventListener('click', () => {
+          state.selected = day;
+          drawWeekAndDay();
+        });
+        box.append(row);
+      }
+      const axis = element('div', undefined, 'ms-week-axis');
+      const hours = element('span', undefined, 'ms-axis-hours');
+      hours.append(...AXIS.map((hour) => element('small', hour)));
+      axis.append(element('span'), hours);
+      box.append(axis);
+      return box;
     }
-    return group;
-  }
 
-  function select(values, current, label) {
-    const node = element('select', undefined, 'form-select form-select-sm');
-    node.setAttribute('aria-label', label);
-    for (const value of values) {
-      const option = element('option', value);
-      option.value = value;
-      node.append(option);
+    /** One day as a bar of coloured stretches. They follow the direction of the language. */
+    function dayBar(slots) {
+      const bar = element('span', undefined, 'ms-bar');
+      for (const stretch of stretches(slots)) {
+        const part = element('span', undefined, 'ms-stretch');
+        part.dataset.level = stretch.preset;
+        part.style.flexGrow = String(stretch.minutes);
+        part.title = `${stretch.from}–${stretch.to} ${levelText(stretch.preset)}`;
+        bar.append(part);
+      }
+      return bar;
     }
-    node.value = current;
-    return node;
-  }
 
-  function copyRow() {
-    const { selected } = editing;
-    const box = element('div', undefined, 'ms-copy');
-    box.append(element('div', t('ui.program.copyTo'), 'ms-label mb-1'));
-    const chips = element('div', undefined, 'ms-chips');
-    const copy = (targets) => {
-      const others = targets.filter((day) => day !== selected);
-      editing.days = withDayCopied(editing.days, selected, others);
-      flashing = others;
+    /** Everything that depends on the slots. Called after each change to them. */
+    function drawWeekAndDay() {
+      weekBox.replaceChildren(week());
+      flashing = [];
+      drawDay();
+      drawSaveButton();
+    }
+
+    function setSlots(slots) {
+      state.days = { ...state.days, [state.selected]: slots };
       drawWeekAndDay();
-    };
-    for (const day of DAYS.filter((candidate) => candidate !== selected)) {
-      const chip = element('button', dayName(day, 'short'), 'ms-chip');
-      chip.type = 'button';
-      chip.title = dayName(day, 'long');
-      chip.addEventListener('click', () => copy([day]));
-      chips.append(chip);
     }
-    for (const [text, targets] of [
-      [t('ui.program.workingDays'), WORKING_DAYS],
-      [t('ui.program.everyDay'), DAYS],
-    ]) {
-      const chip = element('button', text, 'ms-chip ms-chip-wide');
-      chip.type = 'button';
-      chip.addEventListener('click', () => copy(targets));
-      chips.append(chip);
-    }
-    box.append(chips);
-    return box;
-  }
 
-  async function saveEditing() {
-    const { number, version, name, days, existingName } = editing;
-    const merged = Object.fromEntries(DAYS.map((day) => [day, mergedDay(days[day])]));
-    const payload = { ...(number === undefined ? {} : { number, version }), name: nameToSave(name, existingName), days: merged };
-    if (!(await change('/program/save', payload, t('ui.program.saved')))) return;
-    editing = undefined;
-    await afterChange();
+    function drawDay() {
+      const slots = state.days[state.selected];
+      const add = button(t('ui.program.addSlot'), 'plus', 'ms-add');
+      const atLimit = mergedDay(slots).length >= view.maxSlotsPerDay;
+      add.disabled = atLimit;
+      add.addEventListener('click', () => setSlots(withSlotAdded(slots)));
+      const problems = dayProblems(slots, view.maxSlotsPerDay);
+      const notes = [];
+      if (problems.sameTime) notes.push(element('div', t('ui.program.sameTime'), 'ms-problem'));
+      if (problems.tooMany) notes.push(element('div', t('ui.program.slotLimit', { max: view.maxSlotsPerDay }), 'ms-problem'));
+      else if (atLimit) notes.push(element('div', t('ui.program.slotLimit', { max: view.maxSlotsPerDay }), 'ms-small-hint'));
+      dayBox.replaceChildren(
+        element('div', dayName(state.selected, 'long'), 'ms-program-day-title'),
+        ...slots.map((slot, index) => slotRow(slots, slot, index)),
+        ...notes,
+        add,
+        copyRow(),
+      );
+    }
+
+    function slotRow(slots, slot, index) {
+      const row = element('div', undefined, 'ms-slot');
+      row.dataset.level = slot.preset;
+      row.append(element('span', t('ui.program.from'), 'ms-slot-from'));
+      if (index === 0) {
+        const time = element('span', slot.time, 'ms-slot-time ms-fixed');
+        time.dir = 'ltr';
+        row.append(time);
+      } else {
+        const [hour = '00', minute = '00'] = slot.time.split(':');
+        const hours = select(HOURS, hour, t('ui.picker.hour'));
+        const quarters = select(QUARTERS.includes(minute) ? QUARTERS : [...QUARTERS, minute], minute, t('ui.picker.minute'));
+        const onTime = () => setSlots(withTime(slots, index, `${hours.value}:${quarters.value}`));
+        hours.addEventListener('change', onTime);
+        quarters.addEventListener('change', onTime);
+        const same = slots.some((other, position) => position !== index && other.time === slot.time);
+        hours.classList.toggle('is-invalid', same);
+        quarters.classList.toggle('is-invalid', same);
+        const time = element('span', undefined, 'ms-slot-time');
+        time.dir = 'ltr';
+        time.append(hours, element('span', ':'), quarters);
+        row.append(time);
+      }
+      row.append(levelButtons(slot.preset, (preset) => setSlots(withLevel(slots, index, preset))));
+      if (index > 0) {
+        const removeSlot = button(undefined, 'close', 'ms-icon-btn ms-slot-remove');
+        removeSlot.setAttribute('aria-label', t('ui.program.removeSlot'));
+        removeSlot.title = t('ui.program.removeSlot');
+        removeSlot.addEventListener('click', () => setSlots(withSlotRemoved(slots, index)));
+        row.append(removeSlot);
+      } else {
+        row.append(element('span'));
+      }
+      return row;
+    }
+
+    /** One button for each temperature: its colour, and its value to tell them apart without the colour too. */
+    function levelButtons(current, onPick) {
+      const group = element('div', undefined, 'ms-levels');
+      group.setAttribute('role', 'radiogroup');
+      group.setAttribute('aria-label', t('ui.program.level'));
+      for (const preset of LEVELS) {
+        const temperature = levelTemperature(preset);
+        const choice = element('button', undefined, 'ms-level');
+        choice.type = 'button';
+        choice.dataset.level = preset;
+        choice.setAttribute('role', 'radio');
+        choice.setAttribute('aria-checked', String(preset === current));
+        choice.setAttribute('aria-label', levelText(preset));
+        choice.title = levelText(preset);
+        choice.append(levelDot(preset), element('span', temperature === undefined ? levelName(preset) : page.degrees(temperature)));
+        if (preset !== current) choice.addEventListener('click', () => onPick(preset));
+        group.append(choice);
+      }
+      return group;
+    }
+
+    function select(values, current, label) {
+      const field = element('select', undefined, 'form-select form-select-sm');
+      field.setAttribute('aria-label', label);
+      for (const value of values) {
+        const option = element('option', value);
+        option.value = value;
+        field.append(option);
+      }
+      field.value = current;
+      return field;
+    }
+
+    function copyRow() {
+      const box = element('div', undefined, 'ms-copy');
+      box.append(element('span', t('ui.program.copyTo'), 'ms-copy-label'));
+      const copy = (targets) => {
+        const others = targets.filter((day) => day !== state.selected);
+        state.days = withDayCopied(state.days, state.selected, others);
+        flashing = others;
+        drawWeekAndDay();
+      };
+      for (const day of DAYS.filter((candidate) => candidate !== state.selected)) {
+        const chip = element('button', dayName(day, 'short'), 'ms-chip');
+        chip.type = 'button';
+        chip.title = dayName(day, 'long');
+        chip.addEventListener('click', () => copy([day]));
+        box.append(chip);
+      }
+      for (const [text, targets] of [
+        [t('ui.program.workingDays'), WORKING_DAYS],
+        [t('ui.program.everyDay'), DAYS],
+      ]) {
+        const chip = element('button', text, 'ms-chip');
+        chip.type = 'button';
+        chip.addEventListener('click', () => copy(targets));
+        box.append(chip);
+      }
+      return box;
+    }
+
+    async function saveProgram() {
+      const { number, version } = state;
+      const days = Object.fromEntries(DAYS.map((day) => [day, mergedDay(state.days[day])]));
+      const payload = { ...(number === undefined ? {} : { number, version }), name: savedName(), days };
+      if (!(await change('/program/save', payload, t('ui.program.saved')))) return;
+      closeEditor(line, false);
+      await afterChange();
+      // The program in use stays open, with what it holds now.
+      if (number !== undefined && number === inUseNumber()) await openExisting(number, true);
+    }
+
+    async function removeProgram() {
+      const name = state.existingName ?? String(state.number);
+      if (!window.confirm(t('ui.program.deleteConfirm', { name }))) return;
+      if (!(await change('/program/delete', { number: state.number }, t('ui.program.deleted')))) return;
+      closeEditor(line, false);
+      await afterChange();
+    }
+
+    refresh();
+    drawWeekAndDay();
+    return {
+      node,
+      auto: draft.auto === true,
+      isDirty,
+      refresh,
+      focusName: () => {
+        if (state.name === '') nameInput.focus();
+      },
+    };
   }
 
   function wire() {
-    $('ms-program-new').addEventListener('click', () => {
-      if (!editing) open({ name: '', days: newProgramDays() });
-    });
+    $('ms-program-new').addEventListener('click', () => openNew('', newProgramDays()));
   }
 
   return { wire, load };

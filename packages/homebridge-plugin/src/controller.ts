@@ -65,7 +65,7 @@ export interface Snapshot {
 }
 
 /** Why a change to a program was not made, for a clear message on the setup page. */
-export type ProgramEditProblem = 'conflict' | 'full' | 'in-use' | 'no-version' | 'unavailable';
+export type ProgramEditProblem = 'conflict' | 'full' | 'in-use' | 'name-taken' | 'no-version' | 'unavailable';
 
 export class ProgramEditError extends Error {
   override name = 'ProgramEditError';
@@ -390,6 +390,7 @@ export class ThermostatController extends EventEmitter<{ change: [] }> {
         options,
       );
       if (creating ? current.valid !== false : edit.version !== versionOf(text)) throw new ProgramEditError('conflict');
+      if (draft.name !== options.existingName && this.#nameIsTaken(draft.name, number)) throw new ProgramEditError('name-taken');
       await this.#keepCopies(client, backups, number, text);
       this.#log.info(`saving program ${number}`);
       return detailsOf(number, await this.#write(client, number, draft, options));
@@ -452,6 +453,14 @@ export class ThermostatController extends EventEmitter<{ change: [] }> {
     const file = await client.readDeviceFile(programFileName(number));
     if (file.checksum === 'mismatch') throw new ProgramWriteError(`program ${number} does not match its checksum`);
     return file.text;
+  }
+
+  /** Two programs with one name could not be told apart. "Casa" and "casa" count as the same. */
+  #nameIsTaken(name: string, number: number): boolean {
+    const wanted = name.toLowerCase();
+    return [...this.#profiles].some(
+      ([slot, profile]) => slot >= USER_PROGRAM_MIN && slot !== number && profile.name?.toLowerCase() === wanted,
+    );
   }
 
   async #freeSlot(client: XOpenClient): Promise<number> {

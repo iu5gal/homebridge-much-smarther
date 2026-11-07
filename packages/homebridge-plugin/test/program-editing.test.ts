@@ -285,6 +285,52 @@ describe('changing programs', () => {
     expect(controller.snapshot.programs.find((program) => program.number === 2)?.name).not.toBe('Program 2');
   });
 
+  describe('names', () => {
+    it.each([
+      ['the same name', 'Program 2'],
+      ['the same name in other capitals', 'PROGRAM 2'],
+      ['a name that becomes the same when cleaned', 'Prògram/ 2'],
+    ])('refuses a new program with %s', async (_case, name) => {
+      const { controller, thermostat } = await setup();
+      await expect(controller.saveProgram({ name, days: allDay('DAY') })).rejects.toMatchObject({ problem: 'name-taken' });
+      expect(thermostat.fileWrites).toEqual([]);
+    });
+
+    it('refuses to rename a program as another one', async () => {
+      const { controller } = await setup();
+      const { version } = await controller.readProgramToEdit(1);
+      await expect(controller.saveProgram({ number: 1, version, name: 'Program 2', days: allDay('DAY') })).rejects.toMatchObject({ problem: 'name-taken' });
+    });
+
+    it('accepts a change of capitals to its own name', async () => {
+      const { controller } = await setup();
+      const { version } = await controller.readProgramToEdit(1);
+      await expect(controller.saveProgram({ number: 1, version, name: 'PROGRAM 1', days: allDay('DAY') })).resolves.toMatchObject({ name: 'PROGRAM 1' });
+    });
+
+    it('leaves alone two programs that already share a name', async () => {
+      const { controller } = await setup();
+      const first = await controller.readProgramToEdit(3);
+      await controller.saveProgram({ number: 3, version: first.version, name: 'Twin', days: allDay('DAY') });
+      const second = await controller.readProgramToEdit(2);
+      await controller.saveProgram({ number: 2, version: second.version, name: 'Twin 2', days: allDay('DAY') });
+      controller.snapshot.programs.find((program) => program.number === 2);
+      const third = await controller.readProgramToEdit(2);
+      await expect(controller.saveProgram({ number: 2, version: third.version, name: 'Twin 2', days: allDay('NIGHT') })).resolves.toMatchObject({ number: 2 });
+    });
+
+    it('frees a name when its program is deleted', async () => {
+      const { controller } = await setup();
+      await controller.deleteProgram(3);
+      await expect(controller.saveProgram({ name: 'Program 3', days: allDay('DAY') })).resolves.toMatchObject({ number: 3 });
+    });
+
+    it('does not count the system program', async () => {
+      const { controller } = await setup();
+      await expect(controller.saveProgram({ name: 'Program 0', days: allDay('DAY') })).resolves.toMatchObject({ number: 4 });
+    });
+  });
+
   it('runs concurrent changes one at a time', async () => {
     const { controller } = await setup();
     const saved = await Promise.all([

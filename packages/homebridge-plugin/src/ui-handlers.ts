@@ -73,6 +73,8 @@ function errorFromControl(response: ControlResponse): UiError {
       return new UiError('ui.error.program-full');
     case 'in-use':
       return new UiError('ui.error.program-in-use');
+    case 'name-taken':
+      return new UiError('ui.error.program-name-taken');
     case 'no-version':
       return new UiError('ui.error.program-no-version');
     case 'program-write':

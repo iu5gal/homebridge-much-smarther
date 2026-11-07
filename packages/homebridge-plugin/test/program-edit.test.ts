@@ -8,6 +8,7 @@ import {
   mergedDay,
   NAME_MAX,
   nameForCopy,
+  nameIsTaken,
   nameToSave,
   newProgramDays,
   stretches,
@@ -123,6 +124,17 @@ describe('the program editor', () => {
     expect(nameForCopy('n'.repeat(40))).toHaveLength(NAME_MAX);
     expect(cleanName(nameForCopy('n'.repeat(40)))).toBe(nameForCopy('n'.repeat(40)));
     expect(cleanName(nameForCopy(`${'n'.repeat(29)} abc`))).toBe(nameForCopy(`${'n'.repeat(29)} abc`));
+  });
+
+  it('finds a free name for a copy', () => {
+    expect(nameForCopy('Work week', ['Work week'])).toBe('Work week 2');
+    expect(nameForCopy('Work week', ['Work week', 'WORK WEEK 2', 'Work week 3'])).toBe('Work week 4');
+    expect(nameForCopy('n'.repeat(32), ['n'.repeat(30).concat(' 2')])).toBe(`${'n'.repeat(30)} 3`);
+  });
+
+  it('knows when a name is taken, whatever the capitals', () => {
+    expect(nameIsTaken('Casa', ['Mare', 'casa'])).toBe(true);
+    expect(nameIsTaken('Casa', ['Mare', undefined])).toBe(false);
   });
 
   describe('the name to save', () => {
