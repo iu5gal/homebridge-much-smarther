@@ -66,5 +66,4 @@ These do not affect normal use, but have not been seen on a real device yet:
 - the natural end of a boost, when its time runs out (the plugin follows whatever the thermostat reports);
 - when, if ever, the thermostat reports its `OFF` mode instead of `PROTECTION`;
 - what the thermostat does with a manual temperature below its protection temperature;
-- what it does when the active program is changed during a manual temperature or a boost;
 - whether a BTicino app left open follows a program changed by the plugin (it does once opened again).
