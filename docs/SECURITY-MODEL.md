@@ -61,7 +61,8 @@ Out of scope: an attacker with root on the Homebridge host, physical access to t
 | Absurd or inconsistent values | Every field is validated; invalid values are ignored, reported as issues, and never reach HomeKit. A temperature flagged invalid by the device is shown as a fault. |
 | A device that stops answering | Keep-alive every 10 s; any missing answer closes the session within 10 s. Reconnection with exponential backoff and jitter, capped at 60 s. After an authentication failure it waits the maximum delay, so that it does not hammer the device. |
 | Command flooding | Commands are queued (16 at most), serialised, spaced by at least 250 ms, and the Home app's slider is debounced (1 s) so that only the last value is sent. |
-| Commands outside the safe set | Only whitelisted operations exist in the code: manual temperature (7–40 °C, step 0.1, end up to 10 days ahead), boost 30/60/90 min, off, program, season. There is no passthrough of raw messages from HomeKit, the setup page or `config.json`. |
+| Commands outside the safe set | Only whitelisted operations exist in the code: manual temperature (7–40 °C, step 0.1, end up to 10 days ahead), boost 30/60/90 min, off, program, season, and writing or erasing a user program. There is no passthrough of raw messages from HomeKit, the setup page or `config.json`. |
+| Damaging what is stored on the thermostat | The core writes only the user programs `1`–`10`, never the system program `0` or the configuration file, which also holds the Wi-Fi credentials. A program is written out field by field from validated values, so no text from outside becomes a file. Each one is read back and compared. Writes are spaced by at least 2 s and are not sent twice. The program in use cannot be erased. |
 | Cooling on a heating-only system | Changing the season from the Home app is off by default (`seasonFromHome`), and the setup page asks for confirmation with a warning. |
 
 ### 4.2 The Homebridge host (A3)

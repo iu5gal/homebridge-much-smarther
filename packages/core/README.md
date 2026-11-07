@@ -4,7 +4,7 @@ TypeScript client for the local XOpen v3 protocol of the first-generation BTicin
 
 The protocol itself is described in [docs/PROTOCOL.md](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/PROTOCOL.md); section numbers below (§) refer to it.
 
-> **Partly verified on a real device.** Authentication, reading the state, events, keep-alive, the program list, diagnostics and device files have been checked against a real X8000, and so has every `SET` this library builds (manual, timed manual, boost, off, timed off, back to the program). Heating only: cooling has not been tried. Points marked **[PA]** or **[ASM]** in PROTOCOL.md may still turn out wrong.
+> **Partly verified on a real device.** Authentication, reading the state, events, keep-alive, the program list, diagnostics and device files have been checked against a real X8000, and so has every `SET` this library builds (manual, timed manual, boost, off, timed off, back to the program, writing and erasing a program). Heating only: cooling has not been tried. Points marked **[PA]** or **[ASM]** in PROTOCOL.md may still turn out wrong.
 
 ## Quick start
 
@@ -25,6 +25,15 @@ client.start();
 await client.setDeviceState({ mode: 'MANUAL', function: 'HEATING', setpoint: 21.5 });
 await client.setDeviceState({ mode: 'BOOST', function: 'HEATING', minutes: 60 });
 await client.setDeviceState({ mode: 'AUTOMATIC', function: 'HEATING' });
+
+// A user program, 1–10. It is validated, written, read back and compared.
+await client.writeProgram({
+  number: 5,
+  name: 'Work week',
+  createdAt: '2026-01-02T08:00:00',
+  days: { monday: [{ time: '00:00', preset: 'NIGHT' }, { time: '06:30', preset: 'DAY' }] /* …and the other six */ },
+});
+await client.eraseProgram(5);
 
 client.stop();
 ```
