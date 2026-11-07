@@ -151,13 +151,13 @@ export function dayProblems(slots, maxSlots) {
 
 /**
  * What a typed name becomes when it is saved, as the plugin does it: letters
- * without accents, digits and single spaces. The result may be empty.
+ * without accents, digits, plain symbols and single spaces. The result may be empty.
  * @param {string} name
  */
 export function cleanName(name) {
   return name
     .normalize('NFD')
-    .replace(/[^a-zA-Z0-9 ]/g, '')
+    .replace(/[^ !#-%(-;=?-~]/g, '')
     .replace(/ +/g, ' ')
     .trim()
     .slice(0, NAME_MAX)
@@ -196,12 +196,12 @@ export function nameIsTaken(name, others) {
 }
 
 /**
- * A free name for the copy of a program, with a number at the end. Separators become spaces.
+ * A free name for the copy of a program, with a number at the end.
  * @param {string | undefined} name
  * @param {readonly (string | undefined)[]} [taken] the names already in use
  */
 export function nameForCopy(name, taken = []) {
-  const clean = cleanName((name ?? '').replace(/[^\p{L}\p{M}\p{N} ]/gu, ' '));
+  const clean = cleanName(name ?? '');
   if (clean === '') return '';
   for (let number = 2; ; number++) {
     const suffix = ` ${number}`;

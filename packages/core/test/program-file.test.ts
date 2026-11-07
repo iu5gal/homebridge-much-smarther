@@ -105,6 +105,10 @@ describe('serializeProgram', () => {
 });
 
 describe('validateProgramDraft', () => {
+  it.each([['Home/away'], ['Mon-Fri'], ['Week (A) 1.5'], ['a_b, c: d!'], ['#1 + 2 = 3?']])('accepts the name %s', (name) => {
+    expect(validateProgramDraft(draft({ name })).name).toBe(name);
+  });
+
   it('accepts a good draft', () => {
     expect(validateProgramDraft(draft())).toMatchObject({ number: 5, name: 'Work week' });
   });
@@ -121,11 +125,12 @@ describe('validateProgramDraft', () => {
     ['a name of 33 characters', { name: 'n'.repeat(33) }],
     ['a name of 64 characters, which comes back damaged', { name: 'n'.repeat(64) }],
     ['a name that is not text', { name: 5 }],
-    ['a name with a slash', { name: 'Home/away' }],
     ['a name with an accent', { name: 'Caffè' }],
     ['a name ending a CDATA section', { name: 'a]]>b' }],
     ['a name with markup', { name: '<x>' }],
     ['a name with an entity', { name: '&amp;' }],
+    ['a name with quotes', { name: 'a"b' }],
+    ['a name with an apostrophe', { name: "a'b" }],
     ['a bad creation date', { createdAt: 'yesterday' }],
     ['no creation date', { createdAt: undefined }],
     ['no days', { days: undefined }],
@@ -153,8 +158,8 @@ describe('validateProgramDraft', () => {
   });
 
   it('accepts an unchanged name that a new one could not be', () => {
-    expect(validateProgramDraft(draft({ name: 'Home/away' }), { existingName: 'Home/away' }).name).toBe('Home/away');
-    expect(() => validateProgramDraft(draft({ name: 'Home/awayy' }), { existingName: 'Home/away' })).toThrow(ValidationError);
+    expect(validateProgramDraft(draft({ name: 'Caffè' }), { existingName: 'Caffè' }).name).toBe('Caffè');
+    expect(() => validateProgramDraft(draft({ name: 'Caffèè' }), { existingName: 'Caffè' })).toThrow(ValidationError);
   });
 
   it.each([

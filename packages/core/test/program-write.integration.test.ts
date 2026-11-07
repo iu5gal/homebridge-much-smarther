@@ -128,8 +128,8 @@ describe('writing programs against the simulator', () => {
 
   it('accepts the current name of a program when told it is unchanged', async () => {
     await connect();
-    await expect(client.writeProgram(draft({ name: 'Home/away' }), { existingName: 'Home/away' })).resolves.toMatchObject({
-      name: 'Home/away',
+    await expect(client.writeProgram(draft({ name: 'Caffè' }), { existingName: 'Caffè' })).resolves.toMatchObject({
+      name: 'Caffè',
     });
   });
 

@@ -121,17 +121,23 @@
     .ms [data-level='PROTECTION'] { --level: #8a9096; }
 
     /* The temperatures, above the programs */
-    .ms .ms-temps { display: flex; flex-wrap: wrap; gap: 0.2rem 1.1rem; }
-    .ms .ms-temp { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
-    .ms .ms-temp small { font-size: 0.9rem; opacity: 0.7; }
-    .ms .ms-dot-level { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--level); flex: none; }
+    .ms .ms-temps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.4rem; }
+    .ms .ms-level-tile { display: flex; flex-direction: column; min-width: 0; padding: 0.35rem 0.65rem; border-radius: 0.6rem; background: var(--level); color: #fff; }
+    .ms .ms-level-tile small { font-size: 0.75rem; line-height: 1.2; overflow-wrap: anywhere; }
+    .ms .ms-level-tile strong { font-size: 1.05rem; font-weight: 500; line-height: 1.25; }
+    @media (max-width: 30rem) { .ms .ms-temps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
     /* The list: one line per program */
-    .ms .ms-program { border-top: 1px solid var(--ms-line); }
+    .ms .ms-program { border-top: 2px solid var(--ms-line); }
     .ms .ms-program-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0; }
     .ms .ms-program-name { flex: 1 1 0; min-width: 0; border: none; background: none; color: inherit; padding: 0.2rem 0; font-weight: 500; text-align: start; overflow-wrap: anywhere; }
     .ms .ms-program .ms-choice { min-width: 0; flex: none; padding: 0.2rem 0.7rem; font-size: 0.82rem; }
     .ms .ms-program .ms-choice.active { background: none; border-color: transparent; color: var(--ms-green); padding-inline: 0.2rem; }
+    .ms .ms-program-title { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 0.15rem; }
+    .ms .ms-program-title .ms-program-name { flex: 0 1 auto; }
+    .ms .ms-program-rename { flex: none; width: 1.7rem; height: 1.7rem; }
+    .ms .ms-program-rename .ms-icon { width: 0.95rem; height: 0.95rem; }
+    .ms .ms-program-name-field { max-width: 20rem; border-color: var(--ms-line); }
     .ms .ms-program-toggle { flex: none; padding: 0.2rem 0.5rem; font-size: 0.82rem; }
     @media (max-width: 30rem) {
       /* The icon alone on a phone: the name takes the room. */
@@ -158,21 +164,29 @@
     /* The chosen day */
     .ms .ms-program-day { margin-top: 0.7rem; }
     .ms .ms-program-day-title { font-weight: 500; margin-bottom: 0.2rem; text-transform: capitalize; }
-    .ms .ms-slot { display: grid; grid-template-columns: max-content 7rem minmax(0, 1fr) 1.8rem; align-items: center; gap: 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid var(--ms-soft); font-size: 0.9rem; }
+    .ms .ms-slot { display: grid; grid-template-columns: max-content 4.2rem minmax(0, 1fr) 1.8rem; align-items: center; gap: 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid var(--ms-soft); font-size: 0.9rem; }
     .ms .ms-slot-from { opacity: 0.65; }
-    .ms .ms-slot-time { display: inline-flex; align-items: center; gap: 0.15rem; }
-    .ms .ms-slot-time.ms-fixed { padding-inline-start: 0.5rem; }
-    /* Hours and minutes stay left to right in every language, so their arrows do too. */
-    .ms .ms-slot-time select, .ms[dir='rtl'] .ms-slot-time select { flex: 1 1 0; min-width: 0; padding: 0.1rem 1.3rem 0.1rem 0.4rem; background-position: right 0.2rem center; border-color: var(--ms-line); }
+    .ms .ms-time-fixed { text-align: center; font-variant-numeric: tabular-nums; }
+    .ms .ms-time-chip { padding: 0.2rem 0; border: 1px solid var(--ms-line); border-radius: 0.45rem; background: none; color: inherit; font-variant-numeric: tabular-nums; font-weight: 500; }
+    .ms .ms-time-chip:hover, .ms .ms-time-chip[aria-expanded='true'] { border-color: var(--ms-accent); color: var(--ms-accent); }
+    .ms .ms-time-chip.ms-bad { border-color: var(--ms-red); color: var(--ms-red); }
+    .ms .ms-time-panel { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 0.35rem; padding: 0.5rem; border-radius: 0.5rem; background: var(--ms-soft); }
+    .ms .ms-time-hours { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.2rem; }
+    .ms .ms-time-quarters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.2rem; }
+    .ms .ms-time-choice { padding: 0.25rem 0; border: none; border-radius: 0.35rem; background: none; color: inherit; font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+    .ms .ms-time-choice:hover { background: var(--ms-soft); }
+    .ms .ms-time-choice.active { background: var(--ms-accent); color: #fff; font-weight: 600; }
+    @media (max-width: 34rem) { .ms .ms-time-hours { grid-template-columns: repeat(6, minmax(0, 1fr)); } .ms .ms-time-choice { padding-block: 0.4rem; } }
     .ms .ms-levels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.25rem; }
-    .ms .ms-level { display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.15rem 0.1rem; border: 1px solid var(--ms-soft); border-radius: 0.4rem; background: none; color: inherit; font-size: 0.78rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
-    .ms .ms-level:hover { border-color: var(--level); }
-    .ms .ms-level[aria-checked='true'] { background: var(--level); border-color: var(--level); color: #fff; }
-    .ms .ms-level[aria-checked='true'] .ms-dot-level { display: none; }
+    .ms .ms-level { padding: 0.18rem 0.1rem; border: 1px solid color-mix(in srgb, var(--level) 40%, transparent); border-radius: 0.4rem; background: color-mix(in srgb, var(--level) 13%, transparent); color: inherit; font-size: 0.78rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .ms .ms-level:hover { background: color-mix(in srgb, var(--level) 28%, transparent); }
+    .ms .ms-level[aria-checked='true'] { background: var(--level); border-color: var(--level); color: #fff; font-weight: 500; }
     .ms .ms-slot-remove { width: 1.8rem; height: 1.8rem; }
+    .ms .ms-slot-remove .ms-icon { width: 1rem; height: 1rem; }
     @media (max-width: 34rem) {
-      .ms .ms-slot { grid-template-columns: max-content minmax(0, 1fr) 1.8rem; }
+      .ms .ms-slot { grid-template-columns: max-content 4.6rem minmax(0, 1fr) 1.8rem; }
       .ms .ms-levels { grid-column: 1 / -1; grid-row: 2; }
+      .ms .ms-slot-remove { grid-column: 4; grid-row: 1; }
     }
     .ms .ms-add { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.35rem; padding: 0.2rem 0.3rem; border: none; border-radius: 0.35rem; background: none; color: var(--ms-accent); font-size: 0.85rem; }
     .ms .ms-add:hover:not(:disabled) { background: var(--ms-soft); }
@@ -183,9 +197,6 @@
     .ms .ms-copy-label { font-size: 0.82rem; opacity: 0.65; }
     .ms .ms-chip { padding: 0.1rem 0.5rem; border: none; border-radius: 0.35rem; background: var(--ms-soft); color: inherit; font-size: 0.78rem; }
     .ms .ms-chip:hover { background: color-mix(in srgb, var(--ms-accent) 22%, transparent); }
-    .ms .ms-editor-name { max-width: 24rem; margin: 0.15rem 0 0.7rem; }
-    .ms .ms-editor-name .form-control { padding-block: 0.25rem; border-color: var(--ms-line); }
-    .ms .ms-editor-name .is-invalid { border-color: var(--ms-red); }
     .ms .ms-small-hint { font-size: 0.78rem; opacity: 0.7; margin-top: 0.2rem; }
     .ms .ms-small-hint.ms-bad { color: var(--ms-red); opacity: 1; }
     .ms .ms-note { font-size: 0.82rem; margin-top: 0.75rem; color: color-mix(in srgb, var(--ms-amber) 60%, currentColor); }

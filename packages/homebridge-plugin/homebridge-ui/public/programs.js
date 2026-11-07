@@ -69,21 +69,16 @@ export function createProgramsTab(page) {
     return node;
   }
 
-  function levelDot(preset) {
-    const dot = element('span', undefined, 'ms-dot-level');
-    dot.dataset.level = preset;
-    return dot;
-  }
-
   // -------------------------------------------------------------------------
   // The temperatures and the list
 
   function drawLevels() {
     $('ms-program-levels').replaceChildren(
       ...LEVELS.map((preset) => {
-        const item = element('span', undefined, 'ms-temp');
-        item.append(levelDot(preset), element('small', levelName(preset)), element('span', page.degrees(levelTemperature(preset))));
-        return item;
+        const tile = element('div', undefined, 'ms-level-tile');
+        tile.dataset.level = preset;
+        tile.append(element('small', levelName(preset)), element('strong', page.degrees(levelTemperature(preset))));
+        return tile;
       }),
     );
   }
@@ -144,7 +139,11 @@ export function createProgramsTab(page) {
     edit.setAttribute('aria-expanded', String(open));
     edit.addEventListener('click', () => void toggle(line));
     line.program = program;
-    line.row.replaceChildren(name, choice, edit);
+    // The title of an open editor stays in place, so that a name being typed keeps the focus.
+    const first = line.editor ? line.editor.title : name;
+    if (line.row.firstChild !== first) line.row.replaceChildren(first);
+    while (line.row.lastChild !== first) line.row.lastChild.remove();
+    line.row.append(choice, edit);
   }
 
   function redrawLine(line) {
@@ -271,8 +270,8 @@ export function createProgramsTab(page) {
 
   function openNew(name, days) {
     const line = { node: element('div', undefined, 'ms-program'), row: element('div', undefined, 'ms-program-row') };
-    line.row.append(element('span', t('ui.program.new'), 'ms-program-name'));
     line.editor = createEditor(line, { name, days });
+    line.row.append(line.editor.title);
     line.node.append(line.row, line.editor.node);
     drafts.add(line);
     drawList();
@@ -284,7 +283,7 @@ export function createProgramsTab(page) {
   // One editor. Each has its own program, with its own changes.
 
   function createEditor(line, draft) {
-    const state = { selected: DAYS[0], ...draft };
+    const state = { selected: DAYS[0], timeOpen: undefined, ...draft };
     const original = JSON.stringify([state.name, state.days]);
     const isDirty = () => JSON.stringify([state.name, state.days]) !== original;
     /** Days just copied over, shown with a short flash. */
@@ -295,7 +294,12 @@ export function createProgramsTab(page) {
     const nameClash = () => savedName() !== state.existingName && nameIsTaken(savedName(), otherNames());
 
     const node = element('div', undefined, 'ms-program-body');
-    const nameInput = element('input', undefined, 'form-control ms-program-name-field');
+    const title = element('span', undefined, 'ms-program-title');
+    const titleText = element('span', undefined, 'ms-program-name');
+    const rename = button(undefined, 'pencil', 'ms-icon-btn ms-program-rename');
+    rename.setAttribute('aria-label', t('ui.program.rename'));
+    rename.title = t('ui.program.rename');
+    const nameInput = element('input', undefined, 'form-control form-control-sm ms-program-name-field');
     nameInput.dir = 'auto';
     nameInput.autocomplete = 'off';
     nameInput.value = state.name;
@@ -303,13 +307,33 @@ export function createProgramsTab(page) {
     nameInput.setAttribute('aria-label', t('ui.program.name'));
     // A name already on the thermostat can be longer than a new one, and must still show whole.
     nameInput.maxLength = Math.max(NAME_MAX, state.existingName?.length ?? 0);
-    const nameHint = element('div', undefined, 'ms-small-hint');
-    const nameBox = element('div', undefined, 'ms-editor-name');
-    nameBox.append(nameInput, nameHint);
+    const nameHint = element('div', undefined, 'ms-small-hint mb-2');
+    let typingName = false;
+    /** The name is plain text with a small button beside it, and a field only while it is being changed. */
+    function showName(typing) {
+      typingName = typing;
+      if (typing) title.replaceChildren(nameInput);
+      else {
+        titleText.textContent = state.name;
+        title.replaceChildren(titleText, rename);
+      }
+      drawName();
+    }
+    rename.addEventListener('click', () => {
+      showName(true);
+      nameInput.focus();
+      nameInput.select();
+    });
     nameInput.addEventListener('input', () => {
       state.name = nameInput.value;
       drawName();
       drawSaveButton();
+    });
+    nameInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') nameInput.blur();
+    });
+    nameInput.addEventListener('blur', () => {
+      if (savedName() !== '' && !nameClash()) showName(false);
     });
 
     const weekBox = element('div');
@@ -331,7 +355,7 @@ export function createProgramsTab(page) {
     main.append(cancel, save);
     const actions = element('div', undefined, 'ms-editor-actions');
     actions.append(side, main);
-    node.append(nameBox, weekBox, dayBox, note, actions);
+    node.append(nameHint, weekBox, dayBox, note, actions);
 
     function drawName() {
       const saved = savedName();
@@ -343,6 +367,7 @@ export function createProgramsTab(page) {
           ? t('ui.program.savedAs', { name: saved })
           : t('ui.program.nameHint', { max: NAME_MAX });
       nameHint.classList.toggle('ms-bad', clash);
+      nameHint.classList.toggle('ms-hidden', !typingName && !clash && !changed);
       nameInput.classList.toggle('is-invalid', clash || (state.name !== '' && saved === ''));
     }
 
@@ -372,6 +397,7 @@ export function createProgramsTab(page) {
         row.append(element('span', dayName(day, 'short'), 'ms-week-day'), dayBar(state.days[day] ?? []));
         row.addEventListener('click', () => {
           state.selected = day;
+          state.timeOpen = undefined;
           drawWeekAndDay();
         });
         box.append(row);
@@ -406,6 +432,7 @@ export function createProgramsTab(page) {
     }
 
     function setSlots(slots) {
+      if (state.timeOpen !== undefined && slots.length !== state.days[state.selected].length) state.timeOpen = undefined;
       state.days = { ...state.days, [state.selected]: slots };
       drawWeekAndDay();
     }
@@ -435,35 +462,67 @@ export function createProgramsTab(page) {
       row.dataset.level = slot.preset;
       row.append(element('span', t('ui.program.from'), 'ms-slot-from'));
       if (index === 0) {
-        const time = element('span', slot.time, 'ms-slot-time ms-fixed');
+        const time = element('span', slot.time, 'ms-time-fixed');
         time.dir = 'ltr';
         row.append(time);
       } else {
-        const [hour = '00', minute = '00'] = slot.time.split(':');
-        const hours = select(HOURS, hour, t('ui.picker.hour'));
-        const quarters = select(QUARTERS.includes(minute) ? QUARTERS : [...QUARTERS, minute], minute, t('ui.picker.minute'));
-        const onTime = () => setSlots(withTime(slots, index, `${hours.value}:${quarters.value}`));
-        hours.addEventListener('change', onTime);
-        quarters.addEventListener('change', onTime);
         const same = slots.some((other, position) => position !== index && other.time === slot.time);
-        hours.classList.toggle('is-invalid', same);
-        quarters.classList.toggle('is-invalid', same);
-        const time = element('span', undefined, 'ms-slot-time');
-        time.dir = 'ltr';
-        time.append(hours, element('span', ':'), quarters);
-        row.append(time);
+        const chip = element('button', slot.time, `ms-time-chip${same ? ' ms-bad' : ''}`);
+        chip.type = 'button';
+        chip.dir = 'ltr';
+        chip.setAttribute('aria-expanded', String(state.timeOpen === index));
+        chip.setAttribute('aria-label', `${t('ui.program.time')} ${slot.time}`);
+        chip.addEventListener('click', () => {
+          state.timeOpen = state.timeOpen === index ? undefined : index;
+          drawDay();
+        });
+        row.append(chip);
       }
       row.append(levelButtons(slot.preset, (preset) => setSlots(withLevel(slots, index, preset))));
       if (index > 0) {
-        const removeSlot = button(undefined, 'close', 'ms-icon-btn ms-slot-remove');
+        const removeSlot = button(undefined, 'trash', 'ms-icon-btn ms-slot-remove');
         removeSlot.setAttribute('aria-label', t('ui.program.removeSlot'));
         removeSlot.title = t('ui.program.removeSlot');
-        removeSlot.addEventListener('click', () => setSlots(withSlotRemoved(slots, index)));
+        removeSlot.addEventListener('click', () => {
+          state.timeOpen = undefined;
+          setSlots(withSlotRemoved(slots, index));
+        });
         row.append(removeSlot);
       } else {
         row.append(element('span'));
       }
+      if (state.timeOpen === index) row.append(timePanel(slots, slot, index));
       return row;
+    }
+
+    /** Hours and quarters as buttons: two touches for any time, on any screen. It closes when the minutes are chosen. */
+    function timePanel(slots, slot, index) {
+      const [hour = '00', minute = '00'] = slot.time.split(':');
+      const panel = element('div', undefined, 'ms-time-panel');
+      panel.dir = 'ltr';
+      const choose = (time, closing) => {
+        const moved = withTime(slots, index, time);
+        state.timeOpen = closing ? undefined : moved.findIndex((other, position) => position > 0 && other.time === time);
+        setSlots(moved);
+      };
+      const group = (label, values, current, className, onPick) => {
+        const box = element('div', undefined, className);
+        box.setAttribute('role', 'group');
+        box.setAttribute('aria-label', label);
+        for (const value of values) {
+          const choice = element('button', value, `ms-time-choice${value === current ? ' active' : ''}`);
+          choice.type = 'button';
+          choice.setAttribute('aria-pressed', String(value === current));
+          choice.addEventListener('click', () => onPick(value));
+          box.append(choice);
+        }
+        return box;
+      };
+      panel.append(
+        group(t('ui.picker.hour'), HOURS, hour, 'ms-time-hours', (value) => choose(`${value}:${minute}`, false)),
+        group(t('ui.picker.minute'), QUARTERS.includes(minute) ? QUARTERS : [...QUARTERS, minute], minute, 'ms-time-quarters', (value) => choose(`${hour}:${value}`, true)),
+      );
+      return panel;
     }
 
     /** One button for each temperature: its colour, and its value to tell them apart without the colour too. */
@@ -480,23 +539,11 @@ export function createProgramsTab(page) {
         choice.setAttribute('aria-checked', String(preset === current));
         choice.setAttribute('aria-label', levelText(preset));
         choice.title = levelText(preset);
-        choice.append(levelDot(preset), element('span', temperature === undefined ? levelName(preset) : page.degrees(temperature)));
+        choice.textContent = temperature === undefined ? levelName(preset) : page.degrees(temperature);
         if (preset !== current) choice.addEventListener('click', () => onPick(preset));
         group.append(choice);
       }
       return group;
-    }
-
-    function select(values, current, label) {
-      const field = element('select', undefined, 'form-select form-select-sm');
-      field.setAttribute('aria-label', label);
-      for (const value of values) {
-        const option = element('option', value);
-        option.value = value;
-        field.append(option);
-      }
-      field.value = current;
-      return field;
     }
 
     function copyRow() {
@@ -546,10 +593,12 @@ export function createProgramsTab(page) {
       await afterChange();
     }
 
+    showName(state.name === '');
     refresh();
     drawWeekAndDay();
     return {
       node,
+      title,
       auto: draft.auto === true,
       isDirty,
       refresh,

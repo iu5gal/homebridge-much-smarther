@@ -118,8 +118,8 @@ describe('the program editor', () => {
 
   it('makes a name for a copy that can be written', () => {
     expect(nameForCopy('Work week')).toBe('Work week 2');
-    expect(nameForCopy('Home/away')).toBe('Home away 2');
-    expect(nameForCopy('///')).toBe('');
+    expect(nameForCopy('Home/away')).toBe('Home/away 2');
+    expect(nameForCopy('日本語')).toBe('');
     expect(nameForCopy(undefined)).toBe('');
     expect(nameForCopy('n'.repeat(40))).toHaveLength(NAME_MAX);
     expect(cleanName(nameForCopy('n'.repeat(40)))).toBe(nameForCopy('n'.repeat(40)));
@@ -141,14 +141,16 @@ describe('the program editor', () => {
     it.each([
       ['Work week', 'Work week'],
       ['Caffè lungo', 'Caffe lungo'],
-      ['Città/Mare', 'CittaMare'],
+      ['Città/Mare', 'Citta/Mare'],
+      ['Mon-Fri (A)', 'Mon-Fri (A)'],
       ['  a   b  ', 'a b'],
       ['Müller & Söhne', 'Muller Sohne'],
-      ['<b>x</b>', 'bxb'],
-      ['a]]>b', 'ab'],
+      ['<b>x</b>', 'bx/b'],
+      ['"a" \'b\'', 'a b'],
+      ['a]]>b', 'a]]b'],
       ['Ελληνικά', ''],
       ['日本語', ''],
-      ['///', ''],
+      ['&&&', ''],
       ['n'.repeat(40), 'n'.repeat(32)],
       [`${'n'.repeat(31)} x`, 'n'.repeat(31)],
     ])('%j becomes %j, here and in the library', (typed, saved) => {
@@ -157,9 +159,9 @@ describe('the program editor', () => {
     });
 
     it('leaves a name that was not changed', () => {
-      expect(nameToSave('Home/away', 'Home/away')).toBe('Home/away');
-      expect(nameToSave('Home/away 2', 'Home/away')).toBe('Homeaway 2');
-      expect(nameToSave('Home/away', undefined)).toBe('Homeaway');
+      expect(nameToSave('Caffè', 'Caffè')).toBe('Caffè');
+      expect(nameToSave('Caffè 2', 'Caffè')).toBe('Caffe 2');
+      expect(nameToSave('Caffè', undefined)).toBe('Caffe');
     });
 
     it('needs something left to save', () => {
@@ -192,6 +194,7 @@ describe('the program editor', () => {
       ['Work', 'Work'],
       ['Home/away', 'Home/away'],
       ['Home/away', undefined],
+      ['Caffè', 'Caffè'],
       ['Caffè', undefined],
       ['', undefined],
       ['   ', undefined],

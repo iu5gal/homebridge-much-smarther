@@ -127,7 +127,7 @@ describe('changing programs', () => {
 
   it.each([
     ['the system program', { number: 0, version: 'x', name: 'Mine', days: allDay('DAY') }],
-    ['a name with nothing left to save', { name: '///', days: allDay('DAY') }],
+    ['a name with nothing left to save', { name: '&&&', days: allDay('DAY') }],
     ['a name that is not text', { name: 5, days: allDay('DAY') }],
     ['days that are not days', { name: 'Mine', days: 'all of them' }],
     ['an unknown level', { name: 'Mine', days: allDay('ECO' as TimeSlot['preset']) }],
@@ -145,11 +145,11 @@ describe('changing programs', () => {
     expect(first.name).toBe('Program 2');
     await expect(controller.saveProgram({ number: 2, version: first.version, name: 'Program 2', days: allDay('NIGHT') })).resolves.toMatchObject({ name: 'Program 2' });
     const second = await controller.readProgramToEdit(2);
-    await expect(controller.saveProgram({ number: 2, version: second.version, name: 'Prog/ràm', days: allDay('NIGHT') })).resolves.toMatchObject({ name: 'Program' });
+    await expect(controller.saveProgram({ number: 2, version: second.version, name: 'Prog/ràm', days: allDay('NIGHT') })).resolves.toMatchObject({ name: 'Prog/ram' });
   });
 
   it.each([
-    ['Città/Mare', 'CittaMare'],
+    ['Città/Mare', 'Citta/Mare'],
     ['n'.repeat(64), 'n'.repeat(32)],
   ])('saves the name %s as %s', async (name, saved) => {
     const { controller } = await setup();
@@ -289,7 +289,7 @@ describe('changing programs', () => {
     it.each([
       ['the same name', 'Program 2'],
       ['the same name in other capitals', 'PROGRAM 2'],
-      ['a name that becomes the same when cleaned', 'Prògram/ 2'],
+      ['a name that becomes the same when cleaned', 'Prògram & 2'],
     ])('refuses a new program with %s', async (_case, name) => {
       const { controller, thermostat } = await setup();
       await expect(controller.saveProgram({ name, days: allDay('DAY') })).rejects.toMatchObject({ problem: 'name-taken' });
@@ -342,7 +342,7 @@ describe('changing programs', () => {
 
   it('goes on after a change that failed', async () => {
     const { controller } = await setup();
-    await expect(controller.saveProgram({ name: '///', days: allDay('DAY') })).rejects.toBeInstanceOf(ValidationError);
+    await expect(controller.saveProgram({ name: '&&&', days: allDay('DAY') })).rejects.toBeInstanceOf(ValidationError);
     await expect(controller.saveProgram({ name: 'Good', days: allDay('DAY') })).resolves.toMatchObject({ number: 4 });
   });
 
