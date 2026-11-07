@@ -471,7 +471,7 @@ export function createProgramsTab(page) {
         chip.type = 'button';
         chip.dir = 'ltr';
         chip.setAttribute('aria-expanded', String(state.timeOpen === index));
-        chip.setAttribute('aria-label', `${t('ui.program.time')} ${slot.time}`);
+        chip.setAttribute('aria-label', `${t('ui.program.from')} ${slot.time}`);
         chip.addEventListener('click', () => {
           state.timeOpen = state.timeOpen === index ? undefined : index;
           drawDay();
@@ -481,8 +481,8 @@ export function createProgramsTab(page) {
       row.append(levelButtons(slot.preset, (preset) => setSlots(withLevel(slots, index, preset))));
       if (index > 0) {
         const removeSlot = button(undefined, 'trash', 'ms-icon-btn ms-slot-remove');
-        removeSlot.setAttribute('aria-label', t('ui.program.removeSlot'));
-        removeSlot.title = t('ui.program.removeSlot');
+        removeSlot.setAttribute('aria-label', t('ui.program.delete'));
+        removeSlot.title = t('ui.program.delete');
         removeSlot.addEventListener('click', () => {
           state.timeOpen = undefined;
           setSlots(withSlotRemoved(slots, index));
@@ -529,7 +529,7 @@ export function createProgramsTab(page) {
     function levelButtons(current, onPick) {
       const group = element('div', undefined, 'ms-levels');
       group.setAttribute('role', 'radiogroup');
-      group.setAttribute('aria-label', t('ui.program.level'));
+      group.setAttribute('aria-label', t('ui.levels.title'));
       for (const preset of LEVELS) {
         const temperature = levelTemperature(preset);
         const choice = element('button', undefined, 'ms-level');
@@ -548,7 +548,12 @@ export function createProgramsTab(page) {
 
     function copyRow() {
       const box = element('div', undefined, 'ms-copy');
-      box.append(element('span', t('ui.program.copyTo'), 'ms-copy-label'));
+      box.append(element('div', t('ui.program.copyTo'), 'ms-copy-label'));
+      const row = element('div', undefined, 'ms-copy-row');
+      const days = element('div', undefined, 'ms-copy-group ms-copy-days');
+      const shortcuts = element('div', undefined, 'ms-copy-group');
+      row.append(days, shortcuts);
+      box.append(row);
       const copy = (targets) => {
         const others = targets.filter((day) => day !== state.selected);
         state.days = withDayCopied(state.days, state.selected, others);
@@ -560,7 +565,7 @@ export function createProgramsTab(page) {
         chip.type = 'button';
         chip.title = dayName(day, 'long');
         chip.addEventListener('click', () => copy([day]));
-        box.append(chip);
+        days.append(chip);
       }
       for (const [text, targets] of [
         [t('ui.program.workingDays'), WORKING_DAYS],
@@ -569,7 +574,7 @@ export function createProgramsTab(page) {
         const chip = element('button', text, 'ms-chip');
         chip.type = 'button';
         chip.addEventListener('click', () => copy(targets));
-        box.append(chip);
+        shortcuts.append(chip);
       }
       return box;
     }

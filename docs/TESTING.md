@@ -72,4 +72,14 @@ With a temporary Homebridge on the development machine first, then on the Pi. Th
 - [ ] On the Pi: restart the router. The Home app shows "No response" while the network is down and recovers by itself.
 - [ ] The setup page: status, commands, programs, settings and diagnostics match the app; the password can be saved and the plugin reconnects.
 - [ ] Memory: note the resident memory of the Homebridge process with the plugin, after an hour.
+- [ ] Weekly programs, on the real thermostat, on the setup page, with the heating under watch:
+  - create a program: it is saved, listed, not active, and shows in the BTicino app once opened again;
+  - edit it, rename it and duplicate it; two programs cannot have the same name;
+  - "Use this": it becomes active and opens by itself; the temperature follows it;
+  - edit the program in use during the program: the target follows at once;
+  - edit the program in use during a manual temperature and during a boost: note what the thermostat does, and that the manual or boost is not cancelled;
+  - a program changed in the BTicino app while open on the page is not overwritten;
+  - delete it, then restore it from the previous versions;
+  - afterwards `much-smarther/program-backups` holds the copies, with mode 0600; put the programs back as they were;
+  - on an iPhone in Safari: times, levels and copying work by touch, and the page scrolls inside the Homebridge UI.
 - [ ] Windows, when a Windows computer or the CI is available: the setup page reaches the plugin over its named pipe, saves the password and sends commands.

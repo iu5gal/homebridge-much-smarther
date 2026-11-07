@@ -35,7 +35,7 @@ The setup page in the Homebridge UI adds what the Home app cannot show:
 - manual temperature **until a chosen day and time**, up to 10 days ahead, or until changed;
 - **off until** a chosen day and time;
 - the remaining time of the current mode, and the next change of level of the program;
-- the **choice of the active program**, with the names from the BTicino app;
+- the **weekly programs**: create, edit, duplicate and delete them, with the previous versions kept, and choose the active one;
 - the **season**, with a confirmation;
 - the thermostat's **settings**, read only: temperature levels, protection temperatures, hysteresis, calibration, panel options, firmware and diagnostics.
 
@@ -48,8 +48,10 @@ See the [setup guide](setup.md#6-the-rest-of-the-setup-page).
 
 ## Limitations
 
-- **The weekly programs cannot be edited** from the Home app or the setup page: create and change them in the BTicino app. The setup page only chooses which one is active.
-- **Settings are read only**: temperature levels, protection temperatures, hysteresis, calibration and panel options are changed in the BTicino app or on the panel.
+- **The weekly programs cannot be edited from the Home app**, which has no such notion: use the setup page or the BTicino app.
+- **Settings are read only**: temperature levels, protection temperatures, hysteresis, calibration and panel options are changed in the BTicino app or on the panel. A program chooses among the levels, and cannot change their temperatures.
+- **Program names** on the setup page use plain letters, digits and symbols, up to 32 characters: accents and the signs `& < > " '` are removed when saving. A name given in the BTicino app stays as it is unless you change it.
+- **The system program** (slot 0) cannot be edited, and **the program in use** cannot be deleted: choose another one first.
 - **One thermostat per Homebridge instance** in this version.
 - **Cooling** is supported but has only been tried with the simulator, not on a real cooling system.
 - **"Away"** (the Away level until a chosen time) is not offered: the app did not offer it on the installation used for testing.
@@ -63,4 +65,6 @@ These do not affect normal use, but have not been seen on a real device yet:
 
 - the natural end of a boost, when its time runs out (the plugin follows whatever the thermostat reports);
 - when, if ever, the thermostat reports its `OFF` mode instead of `PROTECTION`;
-- what the thermostat does with a manual temperature below its protection temperature.
+- what the thermostat does with a manual temperature below its protection temperature;
+- what it does when the active program is changed during a manual temperature or a boost;
+- whether a BTicino app left open follows a program changed by the plugin (it does once opened again).

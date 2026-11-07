@@ -89,6 +89,8 @@ The thermostat's **password** (PswOpen) is not part of `config.json`. Set it on 
 
 Besides the settings and the password, the page shows the state of the thermostat and offers what the BTicino app does: manual temperature until a chosen day and time (up to 10 days ahead) or until changed, boost, off or off until, back to the program, the choice of program, and the season. Settings of the thermostat (temperature levels, protection temperatures, hysteresis, calibration, panel options) and diagnostics are shown read-only.
 
+The weekly programs can be created, edited, duplicated and deleted there, with a copy kept of each version.
+
 ## Languages
 
 The setup page and the names in the Home app come in 43 languages: the 24 official languages of the European Union, Catalan, Icelandic, Norwegian (Bokmål), Russian, Serbian (Cyrillic), Turkish and Ukrainian, and Arabic, Chinese (Simplified and Traditional), Hindi, Hebrew, Indonesian, Japanese, Korean, Malay, Persian, Thai and Vietnamese. The language menu shows each one by its own name; Arabic, Hebrew and Persian lay the page out right to left.
@@ -101,7 +103,7 @@ The setup page and the names in the Home app come in 43 languages: the 24 offici
 
 - **One local client.** The thermostat accepts a single local session, and the plugin keeps it. While Homebridge runs, the BTicino app works through the BTicino cloud as usual, but cannot fall back to the home network: without internet, only Homebridge controls the thermostat. Other local tools are refused too.
 - **One thermostat per Homebridge instance** in this version.
-- **Settings are read-only.** Temperature levels, protection temperatures and the weekly programs are changed in the BTicino app.
+- **Settings are read-only.** Temperature levels and protection temperatures are changed in the BTicino app. The weekly programs can be edited on the setup page.
 - **Cooling** has only been tried with the simulator.
 
 ## Security

@@ -69,6 +69,7 @@ Out of scope: an attacker with root on the Homebridge host, physical access to t
 
 | Threat | Mitigation |
 | --- | --- |
+| Reading the copies of the programs | Program names and times tell something about the household. The copies kept before each write are in a 0700 directory, with mode 0600, and are never logged. A version is chosen by an id that is checked, so nothing else can be reached with it. |
 | Reading the PswOpen | Stored with mode 0600 in a 0700 directory owned by the Homebridge user. A file found with wider permissions is tightened at start, and the log says so. |
 | Commands from another local user | The setup page reaches the plugin through a Unix socket with mode 0600 (on Windows a named pipe), never a TCP port. Every request also carries an access key, rewritten at every start and compared in constant time. Requests are a fixed list; payloads are validated and size-limited. |
 | A stale socket pointing elsewhere | At start the plugin removes a leftover socket only if the path really is a socket. |
@@ -106,7 +107,7 @@ These are outside the project's control, or accepted for v1.
 1. **The protocol is not encrypted after the handshake.** A LAN attacker can read the thermostat's state and inject commands into an open session. This is a property of the device. Keep the thermostat on a trusted network; untrusted devices belong on a guest network.
 2. **Offline guessing of the PswOpen.** A captured handshake (`Ra`, `Rb`, `Dc`) allows an offline guessing attack on the password. Treat network captures as secrets.
 3. **Homebridge UI over plain HTTP.** By default the Homebridge UI is served without TLS. The Homebridge login, a manually typed PswOpen and the BTicino credentials then cross the LAN in clear text. Use the setup page from a trusted network, or enable HTTPS in the Homebridge UI.
-4. **Backups contain secrets.** A Homebridge backup includes the PswOpen, the pairing keys and the setup code. Store backups like passwords.
+4. **Backups contain secrets.** A Homebridge backup includes the PswOpen, the pairing keys, the setup code and the copies of the weekly programs. Store backups like passwords.
 5. **One local session.** The plugin holds the thermostat's only local session. Whoever connects first wins, so a rogue client on the LAN could deny service to the plugin. Without internet, the BTicino app cannot reach the thermostat while the plugin is connected.
 6. **Unofficial cloud endpoint.** The password retrieval uses an undocumented endpoint, which may change, disappear, or start behaving differently. Manual entry of the password always remains possible.
 7. **Root and the Homebridge user.** Anyone with root, or with the Homebridge user's rights, can read every secret. So can every other Homebridge plugin, because plugins run in the same process: install only plugins you trust.

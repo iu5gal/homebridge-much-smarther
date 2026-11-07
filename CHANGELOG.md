@@ -6,6 +6,17 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
+### Added
+
+- **Weekly programs on the setup page:** create, edit, duplicate and delete them. One screen, with the whole week in view: choose a day, its times and levels, and copy it to other days. Several programs can be open at once, and the one in use opens by itself.
+- **Safe writes:** before a change the plugin keeps a copy of what it replaces and of every program before the first change. Each program is read back and compared after writing. A program changed elsewhere meanwhile is not overwritten. The last 10 versions of each program can be restored from the page.
+- The list of programs follows changes announced by the thermostat.
+
+### Changed
+
+- The Programs tab shows the temperature levels in the colours used by the programs.
+- A saved program does not become active by itself, unlike in the BTicino app. Saving the program in use takes effect at once.
+
 ## [0.1.5] - 2026-11-04
 
 ### Fixed

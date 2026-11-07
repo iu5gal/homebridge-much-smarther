@@ -13,7 +13,7 @@ Brings the **first-generation** BTicino Smarther thermostat, model **X8000**, in
 ## What you get
 
 - **In the Home app:** room temperature and humidity, target temperature 7–40 °C, Off, Heat and Auto (the weekly program), Boost 30/60/90 switches, and optional switches for each program and for "off until the next change". Changes made on the panel or in the BTicino app show up within seconds.
-- **On the setup page in the Homebridge UI:** the password retrieved once from your BTicino account, or typed by hand; manual temperature or off until a chosen day and time; the choice of program; the season; the thermostat's settings and diagnostics.
+- **On the setup page in the Homebridge UI:** the password retrieved once from your BTicino account, or typed by hand; manual temperature or off until a chosen day and time; **creating, editing and deleting the weekly programs**, and choosing the active one; the season; the thermostat's settings and diagnostics.
 - **Small and local:** about 10–15 MiB of memory on top of Homebridge, no network port of its own, no subscription or paid service.
 - **43 languages** for the setup page and the Home app names.
 
@@ -46,7 +46,7 @@ Brings the **first-generation** BTicino Smarther thermostat, model **X8000**, in
 
 - **Windows: everything still has to be tried.** The code supports it and the automated tests run on Windows, but the plugin has never been used with Homebridge on Windows. Reports are very welcome.
 - **One local client.** The thermostat accepts a single local session, and the plugin keeps it. The BTicino app keeps working through the BTicino cloud; without internet, only the Home app can reach the thermostat.
-- **The weekly programs** are created and edited in the BTicino app.
+- **Temperature levels** (Home, Night, Away) are changed in the BTicino app or on the panel. The plugin edits the programs that use them, not the levels themselves.
 - **No remote access** of its own: away from home, use the BTicino app, or an Apple home hub.
 - **Translations** were made with AI assistance and have not all been checked by native speakers. Corrections are welcome: see [Contributing](CONTRIBUTING.md#translations).
 

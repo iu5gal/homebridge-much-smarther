@@ -193,10 +193,16 @@
     .ms .ms-add:disabled { opacity: 0.5; }
     .ms .ms-add .ms-icon { width: 0.95rem; height: 0.95rem; }
     .ms .ms-problem { color: var(--ms-red); font-size: 0.82rem; margin-top: 0.3rem; }
-    .ms .ms-copy { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; margin-top: 0.6rem; }
-    .ms .ms-copy-label { font-size: 0.82rem; opacity: 0.65; }
-    .ms .ms-chip { padding: 0.1rem 0.5rem; border: none; border-radius: 0.35rem; background: var(--ms-soft); color: inherit; font-size: 0.78rem; }
+    .ms .ms-copy { margin-top: 0.6rem; }
+    .ms .ms-copy-label { font-size: 0.82rem; opacity: 0.65; margin-bottom: 0.25rem; }
+    /* The two groups fill the whole width, well apart: the days on one side, the shortcuts on the other. */
+    .ms .ms-copy-row { display: flex; gap: 1.1rem; }
+    .ms .ms-copy-group { flex: 1 1 0; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0.25rem; }
+    .ms .ms-copy-days { flex-grow: 2; }
+    .ms .ms-chip { min-width: 0; padding: 0.25rem 0.2rem; border: none; border-radius: 0.35rem; background: var(--ms-soft); color: inherit; font-size: 0.78rem; text-align: center; line-height: 1.2; }
+    .ms .ms-copy-days .ms-chip { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .ms .ms-chip:hover { background: color-mix(in srgb, var(--ms-accent) 22%, transparent); }
+    @media (max-width: 34rem) { .ms .ms-copy-row { flex-direction: column; gap: 0.6rem; } .ms .ms-copy-group { flex: none; } }
     .ms .ms-small-hint { font-size: 0.78rem; opacity: 0.7; margin-top: 0.2rem; }
     .ms .ms-small-hint.ms-bad { color: var(--ms-red); opacity: 1; }
     .ms .ms-note { font-size: 0.82rem; margin-top: 0.75rem; color: color-mix(in srgb, var(--ms-amber) 60%, currentColor); }
