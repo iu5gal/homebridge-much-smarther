@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildEraseProgram,
   buildSetProgram,
+  cleanProgramName,
   decodeDocument,
   draftFromProfile,
   encodeMessage,
@@ -195,6 +196,15 @@ describe('validateProgramDraft', () => {
     expect(validateProgramDraft(draft({ days: week(same) })).days.monday).toHaveLength(1);
     const huge: TimeSlot[] = Array.from({ length: 81 }, () => ({ time: '00:00', preset: 'DAY' }));
     expect(() => validateProgramDraft(draft({ days: week(huge) }))).toThrow(/too many/);
+  });
+});
+
+describe('cleanProgramName', () => {
+  it('gives a name that can always be written, or nothing', () => {
+    for (const typed of ['Caffè', 'a/b', ' x  y ', 'n'.repeat(64), `${'n'.repeat(31)} x`, 'Città & Mare']) {
+      expect(validateProgramDraft(draft({ name: cleanProgramName(typed) })).name).toBe(cleanProgramName(typed));
+    }
+    expect(cleanProgramName('日本語')).toBe('');
   });
 });
 

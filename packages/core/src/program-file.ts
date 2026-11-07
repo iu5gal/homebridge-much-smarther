@@ -62,6 +62,21 @@ export function assertUserProgram(number: unknown): asserts number is number {
   }
 }
 
+/**
+ * What a typed name becomes when it is saved: letters without their accents,
+ * digits and single spaces, within the length limit. Everything else goes,
+ * since the thermostat is not known to handle it. The result may be empty.
+ */
+export function cleanProgramName(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/[^a-zA-Z0-9 ]/g, '')
+    .replace(/ +/g, ' ')
+    .trim()
+    .slice(0, PROGRAM_NAME_MAX_LENGTH)
+    .trim();
+}
+
 function validName(name: unknown, existingName: string | undefined): string {
   if (typeof name !== 'string') throw new ValidationError('the program name must be text');
   if (name === existingName && name.trim() !== '' && name.length <= EXISTING_NAME_MAX_LENGTH && !NAME_FORBIDDEN.test(name)) {

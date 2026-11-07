@@ -118,7 +118,7 @@ describe('control server', () => {
       ['/v1/program/save', { number: 2, name: 'x', days }],
       ['/v1/program/save', { number: 2, version: 'short', name: 'x', days }],
       ['/v1/program/save', { version: 'a'.repeat(64), name: 'x', days }],
-      ['/v1/program/save', { name: 'a/b', days }],
+      ['/v1/program/save', { name: '///', days }],
       ['/v1/program/save', { name: 'x', days: 'all' }],
       ['/v1/program/save', { number: 0, version: 'a'.repeat(64), name: 'x', days }],
       ['/v1/program/delete', { number: 0 }],

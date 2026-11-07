@@ -10,7 +10,6 @@ export const QUARTERS = ['00', '15', '30', '45'];
 export const NAME_MAX = 32;
 
 const MINUTES_PER_DAY = 24 * 60;
-const NEW_NAME = /^[a-zA-Z0-9](?:[a-zA-Z0-9 ]*[a-zA-Z0-9])?$/;
 const QUARTER_HOUR = /^(?:[01][0-9]|2[0-3]):(?:00|15|30|45)$/;
 
 /** @typedef {{ time: string, preset: string }} Slot */
@@ -151,13 +150,27 @@ export function dayProblems(slots, maxSlots) {
 }
 
 /**
- * A new name follows the rule; the name a program already has stays good as it is.
+ * What a typed name becomes when it is saved, as the plugin does it: letters
+ * without accents, digits and single spaces. The result may be empty.
+ * @param {string} name
+ */
+export function cleanName(name) {
+  return name
+    .normalize('NFD')
+    .replace(/[^a-zA-Z0-9 ]/g, '')
+    .replace(/ +/g, ' ')
+    .trim()
+    .slice(0, NAME_MAX)
+    .trim();
+}
+
+/**
+ * The name that will be saved: one left as it was stays, a new one is cleaned.
  * @param {string} name
  * @param {string | undefined} existingName
  */
-export function nameIsValid(name, existingName) {
-  if (existingName !== undefined && name === existingName && name.trim() !== '') return true;
-  return name.length <= NAME_MAX && NEW_NAME.test(name);
+export function nameToSave(name, existingName) {
+  return existingName !== undefined && name === existingName ? name : cleanName(name);
 }
 
 /**
@@ -165,7 +178,7 @@ export function nameIsValid(name, existingName) {
  * @param {number} maxSlots
  */
 export function canSave(draft, maxSlots) {
-  if (!nameIsValid(draft.name, draft.existingName)) return false;
+  if (nameToSave(draft.name, draft.existingName).trim() === '') return false;
   return DAYS.every((day) => {
     const problems = dayProblems(draft.days[day] ?? [], maxSlots);
     return (draft.days[day] ?? []).length > 0 && !problems.sameTime && !problems.tooMany && !problems.offQuarter;
@@ -173,11 +186,11 @@ export function canSave(draft, maxSlots) {
 }
 
 /**
- * A name for the copy of a program: only what a new name may hold, with a 2 at the end.
+ * A name for the copy of a program, with a 2 at the end. Separators become spaces.
  * @param {string | undefined} name
  */
 export function nameForCopy(name) {
-  const clean = (name ?? '').replace(/[^a-zA-Z0-9 ]/g, ' ').replace(/ +/g, ' ').trim();
+  const clean = cleanName((name ?? '').replace(/[^\p{L}\p{M}\p{N} ]/gu, ' '));
   if (clean === '') return '';
   return `${clean.slice(0, NAME_MAX - 2).trim()} 2`;
 }

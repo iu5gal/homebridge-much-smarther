@@ -127,8 +127,8 @@ describe('changing programs', () => {
 
   it.each([
     ['the system program', { number: 0, version: 'x', name: 'Mine', days: allDay('DAY') }],
-    ['a bad name', { name: 'a/b', days: allDay('DAY') }],
-    ['a name of 64 characters', { name: 'n'.repeat(64), days: allDay('DAY') }],
+    ['a name with nothing left to save', { name: '///', days: allDay('DAY') }],
+    ['a name that is not text', { name: 5, days: allDay('DAY') }],
     ['days that are not days', { name: 'Mine', days: 'all of them' }],
     ['an unknown level', { name: 'Mine', days: allDay('ECO' as TimeSlot['preset']) }],
     ['a day not starting at midnight', { name: 'Mine', days: week([{ time: '06:00', preset: 'DAY' }]) }],
@@ -145,7 +145,15 @@ describe('changing programs', () => {
     expect(first.name).toBe('Program 2');
     await expect(controller.saveProgram({ number: 2, version: first.version, name: 'Program 2', days: allDay('NIGHT') })).resolves.toMatchObject({ name: 'Program 2' });
     const second = await controller.readProgramToEdit(2);
-    await expect(controller.saveProgram({ number: 2, version: second.version, name: 'Prog/ram', days: allDay('NIGHT') })).rejects.toBeInstanceOf(ValidationError);
+    await expect(controller.saveProgram({ number: 2, version: second.version, name: 'Prog/ràm', days: allDay('NIGHT') })).resolves.toMatchObject({ name: 'Program' });
+  });
+
+  it.each([
+    ['Città/Mare', 'CittaMare'],
+    ['n'.repeat(64), 'n'.repeat(32)],
+  ])('saves the name %s as %s', async (name, saved) => {
+    const { controller } = await setup();
+    await expect(controller.saveProgram({ name, days: allDay('DAY') })).resolves.toMatchObject({ name: saved });
   });
 
   describe('copies', () => {
@@ -288,7 +296,7 @@ describe('changing programs', () => {
 
   it('goes on after a change that failed', async () => {
     const { controller } = await setup();
-    await expect(controller.saveProgram({ name: 'a/b', days: allDay('DAY') })).rejects.toBeInstanceOf(ValidationError);
+    await expect(controller.saveProgram({ name: '///', days: allDay('DAY') })).rejects.toBeInstanceOf(ValidationError);
     await expect(controller.saveProgram({ name: 'Good', days: allDay('DAY') })).resolves.toMatchObject({ number: 4 });
   });
 

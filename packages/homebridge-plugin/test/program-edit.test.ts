@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { validateProgramDraft } from '@much-smarther/core';
+import { cleanProgramName, validateProgramDraft } from '@much-smarther/core';
 import {
   canSave,
+  cleanName,
   dayProblems,
   DAYS,
   mergedDay,
   NAME_MAX,
   nameForCopy,
-  nameIsValid,
+  nameToSave,
   newProgramDays,
   stretches,
   withDayCopied,
@@ -120,12 +121,45 @@ describe('the program editor', () => {
     expect(nameForCopy('///')).toBe('');
     expect(nameForCopy(undefined)).toBe('');
     expect(nameForCopy('n'.repeat(40))).toHaveLength(NAME_MAX);
-    expect(nameIsValid(nameForCopy('n'.repeat(40)), undefined)).toBe(true);
-    expect(nameIsValid(nameForCopy(`${'n'.repeat(29)} abc`), undefined)).toBe(true);
+    expect(cleanName(nameForCopy('n'.repeat(40)))).toBe(nameForCopy('n'.repeat(40)));
+    expect(cleanName(nameForCopy(`${'n'.repeat(29)} abc`))).toBe(nameForCopy(`${'n'.repeat(29)} abc`));
+  });
+
+  describe('the name to save', () => {
+    it.each([
+      ['Work week', 'Work week'],
+      ['Caffè lungo', 'Caffe lungo'],
+      ['Città/Mare', 'CittaMare'],
+      ['  a   b  ', 'a b'],
+      ['Müller & Söhne', 'Muller Sohne'],
+      ['<b>x</b>', 'bxb'],
+      ['a]]>b', 'ab'],
+      ['Ελληνικά', ''],
+      ['日本語', ''],
+      ['///', ''],
+      ['n'.repeat(40), 'n'.repeat(32)],
+      [`${'n'.repeat(31)} x`, 'n'.repeat(31)],
+    ])('%j becomes %j, here and in the library', (typed, saved) => {
+      expect(cleanName(typed)).toBe(saved);
+      expect(cleanProgramName(typed)).toBe(saved);
+    });
+
+    it('leaves a name that was not changed', () => {
+      expect(nameToSave('Home/away', 'Home/away')).toBe('Home/away');
+      expect(nameToSave('Home/away 2', 'Home/away')).toBe('Homeaway 2');
+      expect(nameToSave('Home/away', undefined)).toBe('Homeaway');
+    });
+
+    it('needs something left to save', () => {
+      expect(canSave({ name: 'Città', days: newProgramDays() }, 10)).toBe(true);
+      expect(canSave({ name: '日本語', days: newProgramDays() }, 10)).toBe(false);
+      expect(canSave({ name: '日本語', existingName: '日本語', days: newProgramDays() }, 10)).toBe(true);
+    });
   });
 
   describe('agrees with the library', () => {
-    const draft = (name: string, existingName: string | undefined, days: Record<string, readonly { time: string; preset: string }[]>) => {
+    const draft = (typed: string, existingName: string | undefined, days: Record<string, readonly { time: string; preset: string }[]>) => {
+      const name = nameToSave(typed, existingName);
       const fromCore = (() => {
         try {
           validateProgramDraft(
@@ -137,7 +171,7 @@ describe('the program editor', () => {
           return false;
         }
       })();
-      return { fromCore, fromPage: canSave({ name, ...(existingName === undefined ? {} : { existingName }), days }, 10) };
+      return { fromCore, fromPage: canSave({ name: typed, ...(existingName === undefined ? {} : { existingName }), days }, 10) };
     };
     const days = newProgramDays();
 

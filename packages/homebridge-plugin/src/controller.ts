@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import {
   assertUserProgram,
+  cleanProgramName,
   draftFromProfile,
   formatLocalDateTime,
   nextLevelChange,
@@ -382,8 +383,10 @@ export class ThermostatController extends EventEmitter<{ change: [] }> {
         ...(current.name === undefined || current.valid === false ? {} : { existingName: current.name }),
         maxSlotsPerDay: slotsPerDayLimit(this.#configuration?.firmwareVersionOfLastSaving),
       };
+      // A name left as it was stays, whatever it holds. A new one is cleaned here, whatever sent it.
+      const name = typeof edit.name === 'string' && edit.name !== options.existingName ? cleanProgramName(edit.name) : edit.name;
       const draft = validateProgramDraft(
-        { number, name: edit.name, days: edit.days, createdAt: current.valid === false ? createdAt : (current.createdAt ?? createdAt) },
+        { number, name, days: edit.days, createdAt: current.valid === false ? createdAt : (current.createdAt ?? createdAt) },
         options,
       );
       if (creating ? current.valid !== false : edit.version !== versionOf(text)) throw new ProgramEditError('conflict');
