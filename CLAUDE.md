@@ -34,6 +34,7 @@ Published on GitHub and npm (MIT). This file holds rules only, so keep it short:
 - **Cloud login**: TLS certificate verification stays on. If it cannot work with verification, stop and discuss. The cloud helper stays optional and isolated; manual PIN entry must always remain possible.
 - **XML parsing**: no DTD, no external entities, no entity expansion. Size limits on messages and buffers, strict validation of every field. XXE and entity-expansion payloads must be rejected, with tests.
 - **Commands**: only whitelisted operations reach the thermostat, with validated ranges (setpoint 7–40 in steps of 0.1, boost 30/60/90). No arbitrary passthrough from the UI or the config. Rate-limit and debounce, because Home app sliders fire many updates.
+- **Program writes**: back up every program before the first write, and read each one back after writing it.
 - **Supply chain**: commit the lockfile, pin GitHub Actions by commit SHA, publish to npm with provenance.
 
 ## Licensing
@@ -57,12 +58,11 @@ Published on GitHub and npm (MIT). This file holds rules only, so keep it short:
 
 Follows the GitHub milestones, in this order. Each one starts with a study and a plan, and waits for the owner's approval before any code.
 
-1. **0.2.0 – Weekly programs from the plugin.** Only if the local protocol supports it cleanly. Back up every program before any write; test on an empty slot first.
-2. **0.3.0 – Optional SmartThings module**, as a Direct Connected device (MQTT from the Homebridge host to the SmartThings cloud, no hub), off by default.
+1. **0.3.0 – Optional SmartThings module**, as a Direct Connected device (MQTT from the Homebridge host to the SmartThings cloud, no hub), off by default.
    - Go/no-go first: no paid plan or service, fits in the memory of a 1 GB Pi, never a second connection to the thermostat, Apple Home side unchanged, "Verified by Homebridge" still possible.
    - Ruled out: an ST Schema connector, or a virtual device through the SmartThings API. Since 2026-11-04 Samsung charges individual developers for OAuth cloud API calls.
    - Each user registers their own test device in the SmartThings Developer Center: document it as a limitation.
-3. **0.4.0 – Full use without the BTicino cloud (study).** Find a local way to set up the thermostat, or to set or learn its password. Try nothing that could leave the thermostat unusable without a known way back.
+2. **0.4.0 – Full use without the BTicino cloud (study).** Find a local way to set up the thermostat, or to set or learn its password. Try nothing that could leave the thermostat unusable without a known way back.
 
 ## Working rules
 

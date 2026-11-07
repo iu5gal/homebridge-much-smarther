@@ -9,7 +9,7 @@ What you should know to run the plugin safely. The full threat model, for develo
 - **The thermostat's password (PswOpen)** is stored in `<Homebridge storage>/much-smarther/pswopen`, readable only by the Homebridge user (mode 0600, directory 0700). It is not in `config.json` and is never written to the log.
 - **Your BTicino e-mail and password** are used for one request, when you ask the setup page to retrieve the thermostat's password. They are never saved and never logged.
 - **No network port.** The plugin talks to the thermostat on your LAN, and the setup page talks to the plugin through a local socket protected by an access key.
-- **Only safe commands.** The plugin sends a fixed set of commands with checked values: temperature 7–40 °C, boost 30, 60 or 90 minutes, off, program, season. Nothing else can be sent to the thermostat through it.
+- **Only safe commands.** The plugin sends a fixed set of commands with checked values: temperature 7–40 °C, boost 30, 60 or 90 minutes, off, program, season. It also writes the weekly programs you edit on the setup page: only programs 1–10, built field by field from checked values and read back after writing, with a copy kept of what they replace. Nothing else can be sent to the thermostat through it.
 
 ### What you should do
 

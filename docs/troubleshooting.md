@@ -43,6 +43,14 @@ Start from the Homebridge log (**Logs** in the Homebridge UI). The plugin's line
 
 **"This choice has expired."** The thermostats found on the BTicino account can be chosen for five minutes. Sign in again.
 
+**"This program was changed elsewhere in the meantime."** It was changed in the BTicino app or on the panel after you opened it, and the plugin does not overwrite that. Open it again and repeat your changes on the new version.
+
+**"The thermostat stored something different from what was sent."** The check after saving failed. Open the program and look at it, or bring back its last version from "Previous versions" on the Programs tab.
+
+**"There is room for ten programs."** Delete one before creating another.
+
+**"This program is in use."** The program in use cannot be deleted. Choose another one first.
+
 For the messages of the BTicino sign-in, see [setup](setup.md#sign-in-with-your-bticino-account-recommended).
 
 ## The BTicino app
