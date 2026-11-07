@@ -103,5 +103,22 @@ Once connected, the page also works as a small control panel, with the same choi
 
 - **Thermostat**: room temperature and humidity, mode and its end, target temperature, whether the heating is running, the next change of level.
 - **Commands**: manual temperature until a chosen day and time (up to 10 days ahead) or until changed; boost for 30, 60 or 90 minutes; off, or off until a chosen time; back to the program; the season, with a confirmation.
-- **Programs**: the weekly programs with their names, and the choice of the active one.
+- **Programs**: the temperature levels, the weekly programs, and the choice of the active one. See below.
 - **Settings**: temperature levels, protection temperatures, hysteresis, calibration, panel options, firmware and diagnostics, read only. They are changed in the BTicino app or on the thermostat.
+
+### Weekly programs
+
+The program in use opens by itself; **Edit** opens any other, and several can be open at once. Each one shows its week as seven coloured bars.
+
+- **Choose a day**, then set its lines. Each line means "from this time on, use this level", until the next line. The first line is always at 00:00.
+- **A time**: touch it, then choose the hour and the minutes, in quarter hours.
+- **A level**: touch one of the four coloured buttons. Their temperatures are the thermostat's levels, shown at the top, and they change in the BTicino app or on the panel.
+- **Copy this day** to another day, to the working days, or to every day.
+- **The name**: the pencil next to it changes it. Up to 32 characters. Accents and the signs `& < > " '` are removed when saving, and the page shows the result first. Two programs cannot have the same name.
+- **Save on the thermostat**: the plugin first keeps a copy of what it replaces, then writes the program, reads it back and compares it. A saved program does not become active by itself: use **Use this**.
+
+**Saving the program in use takes effect at once**, so the heating may start or stop. If the program was changed elsewhere after you opened it, in the BTicino app for example, the plugin does not overwrite it: open it again.
+
+**Previous versions**, at the bottom of the tab, bring back the last 10 versions of each program, deleted ones too. They are in `much-smarther/program-backups` in the Homebridge storage directory, with a copy of every program as it was before the first change. Homebridge backups include them.
+
+An open BTicino app may need to be opened again to show a change.

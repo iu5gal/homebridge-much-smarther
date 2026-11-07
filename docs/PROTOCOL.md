@@ -130,8 +130,9 @@ All commands use `WHO="4"`, an empty `WHERE`, a fresh `SeqID` and `Progress="0"`
 | --- | --- | --- | --- |
 | `device_state` | `GET` | none | `RSP device_state` with the state (§6) **[PA]** |
 | `device_keep_alive` | `GET` | none | `RSP AckMsg` with the same `SeqID`, in about 40 ms. **[OBS]** Any answer, even `NackMsg`, shows that the thermostat is alive. **[ASM]** |
-| `device_program_number_list` | `GET` | none | `RSP` with eleven `Params`, one per slot `0`–`10`: `program_N_present="TRUE"` plus a `timestamp` (last change, sometimes empty), or `program_N_present="FALSE"`. No program names. **[OBS]** Slot `0` is a system program that the app does not let the user edit or delete; `1`–`10` are the user programs. **[ASM]** |
+| `device_program_number_list` | `GET` | none | `RSP` with eleven `Params`, one per slot `0`–`10`: `program_N_present="TRUE"` plus a `timestamp` (last change, sometimes empty), or `program_N_present="FALSE"`. No program names. **[OBS]** An empty slot still has a file that can be read (§5.2). **[OBS]** Slot `0` is a system program that the app does not let the user edit or delete; `1`–`10` are the user programs. **[ASM]** |
 | `device_state` | `SET` | see §5.1 | `RSP AckMsg` with the same `SeqID`, in about 120 ms, followed by an `EVT device_state` about 50 ms later. **[OBS]** `RSP NackMsg` on refusal **[PA]**; no refusal seen yet. |
+| `device_file` | `SET` | see §5.3 | `RSP AckMsg`, in 150–550 ms, followed by an `EVT device_program_number_list`. **[OBS]** |
 
 Responses to `SET` sometimes come **without a `SeqID`** **[PA]**; the observed device always sent it **[OBS]**. A client that keeps only one command in flight can match them unambiguously either way.
 
@@ -201,6 +202,40 @@ Files this project reads (no other name can be requested):
   - `program_description`: `is_program_profile_valid` (`TRUE` / `FALSE`), `number`, `name` (typed by the user), `type` (`DAILY` / `WEEKLY`).
   - `weekday`: one element per day (`monday` … `sunday`), each with `<slot id="…" preset="…" time="HH:MM" />` elements. A slot means "from this time on, use this preset", until the next slot. Presets are `DAY`, `NIGHT`, `AWAY` and `PROTECTION`; their temperatures are the levels of the configuration file. A `DAILY` program still lists all seven days. **[OBS]**
   - Slot `0` on the observed device is a `WEEKLY` program with `PROTECTION` all day, every day, and the name `0`. **[OBS]**
+  - An empty slot has a file too, of about 920 bytes: `is_program_profile_valid` `FALSE`, type `WEEKLY`, its number as the name, `is_creation_date_valid` `FALSE` and `PROTECTION` all week. **[OBS]**
+  - Every program on the observed device has a slot at `00:00` on every day, and only times in quarter hours. **[OBS]**
+
+### 5.3 Writing programs
+
+Checked on the real device on 2026-11-06, on a slot that was empty and with test programs only **[OBS]**, except where marked.
+
+The message has the same shape as a file in an answer (§5.2), with `WHO="1004"`:
+
+```xml
+<Service TYPE="SET" />
+<SeqID ID="…" Progress="0" Marker="0" IsLast="TRUE" />
+<Address WHO="1004" WHERE="" />
+<ActionID>device_file</ActionID>
+<ParamList>
+  <Params file_name="device_program_profile_5.xml" sha256sum="…" />
+  <Params><file_data encoded=""><![CDATA[…the file…]]></file_data></Params>
+</ParamList>
+```
+
+`sha256sum` is the SHA-256 of the UTF-8 file text, as 64 lowercase hex characters.
+
+- **Answer.** `RSP AckMsg` in about 150–270 ms for a message of up to 2.4 KB, and in about 530–550 ms for one of 4.3 KB, which is sent over several TCP segments. An `EVT device_program_number_list` follows; this project uses it only as a signal, and did not record its parameters. The list then shows the slot as present, with a timestamp.
+- **Reading back.** The file comes back byte for byte as it was written, when it follows the layout below.
+- **Layout.** LF line ends, tabs for indentation, no XML declaration, and elements in this order: `filename`, then `program_description` with `is_program_profile_valid`, `number`, `name`, `type`, `is_creation_date_valid`, `creation_date`, then `weekday` with the days from `sunday` to `saturday`, each with `<slot id="0" preset="DAY" time="00:00"/>` lines, numbered from `0` every day. The `creation_date` is `YYYY-MM-DDTHH:MM:SS`. `DAILY` is written for programs with the same seven days. The code in `program-file.ts` reproduces every user program of the observed device byte for byte.
+- **A name of 64 characters comes back damaged.** The device accepted it, and reported the name with the file path right after it (`…/micro_fs/device_program_profile_10.xml`). So the device seems to build the file from its own fields, one of which has no room for a terminator. **[ASM]** This library allows 32 characters and did not look for the exact limit.
+- **Name rule.** A name on the observed device contains a `/`. **[OBS]** New names here may hold plain letters, digits, spaces and ASCII symbols, except `&`, `<`, `>`, `"` and `'`, which mean something in XML. Only the `/` has been seen on the device; the other symbols are **[ASM]**, and each write is read back. Accents and other scripts are removed when saving, since they have not been tried. An existing name is kept as it is unless it is changed.
+- **Other limits of the app**, followed here: times in quarter hours, at least one slot a day, and at most 10 slots a day (8 with `firmware_version_of_last_saving` 1.0.x). **[ASM]** The device accepted 10 slots on every day. **[OBS]**
+- **Effect on the state.** Writing a program that is not active changes nothing in the state. Writing the active one during `AUTOMATIC` takes effect at once, with no other command: the first `GET device_state` after the answer already gave the setpoint of the new slot, with mode and program unchanged. During `MANUAL` or `BOOST` the mode, its setpoint and its window stay as they are, and the new program applies on the return to `AUTOMATIC`. **[OBS]** (2026-11-07, also the plugin's own client, from the code path of the setup page.)
+- **Activating.** `SET device_state` with `AUTOMATIC` and the `program_number` of a newly written slot works, and so does going back to the previous one.
+- **Erasing.** The same message, with the word `ERASE` as the file text and its checksum. `RSP AckMsg` in about 210–250 ms, and the same event. The slot file is then byte for byte the original empty one, and the list shows it as not present.
+- **With the BTicino app.** A program written over the local session appeared in the app when it was opened again, and left it after being erased. Whether an app left open follows at once is not known.
+
+Not tried, on purpose: a wrong checksum, a malformed file, writing slot `0` or the configuration file, and erasing the active program. This library refuses all of them before sending anything, and does not send a write twice, except once more after a "busy" answer. Since an accepted write can still come back different, it reads every program back and compares it.
 
 ## 6. State and events
 
@@ -233,6 +268,8 @@ Known parameters (**[PA]** unless noted):
 | `is_ipv4_valid`, `ip` | thermostat address, in one `Params`. Personal data: strip it from captures. **[OBS]** |
 
 Unknown parameters may appear and must be ignored, not rejected.
+
+Writing or erasing a program also produces an `EVT device_program_number_list` (§5.3). **[OBS]** Whether changes made from the app produce it too has not been checked yet.
 
 ### 6.1 Observed transitions
 
@@ -301,3 +338,4 @@ Notes:
 - The setpoint step accepted by `SET`. The app sets values such as 20.7 °C, so 0.1 °C is likely. **[ASM]**
 - State `OFF`, and the `COOLING` function. Cooling cannot be tried on the observed installation, whose relay drives a boiler.
 - Does the thermostat send `OWNxml` (V1) messages during normal operation? None seen in 50 minutes.
+- Whether an open BTicino app follows a program written locally, and whether a change made in the app produces `EVT device_program_number_list`.

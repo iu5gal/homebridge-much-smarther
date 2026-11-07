@@ -8,11 +8,12 @@ import {
   isValidSetpoint,
   NotConnectedError,
   PROGRAM_NUMBER_MAX,
+  ProgramWriteError,
   ValidationError,
   type Logger,
   type ThermostatState,
 } from '@much-smarther/core';
-import type { Snapshot, ThermostatController } from './controller.js';
+import { ProgramEditError, type Snapshot, type ThermostatController } from './controller.js';
 
 /**
  * The setup UI runs in another process, and the thermostat accepts a single
@@ -34,6 +35,14 @@ import type { Snapshot, ThermostatController } from './controller.js';
  *   POST /v1/season   { function }
  *   POST /v1/reload   {}   (read the password again and reconnect)
  *   POST /v1/refresh  {}   (read settings and programs again)
+ *   GET  /v1/programs
+ *   POST /v1/program/read     { number }
+ *   POST /v1/program/save     { number?, version?, name, days }
+ *   POST /v1/program/delete   { number }
+ *   POST /v1/program/restore  { number, id }
+ *
+ * A saved program is taken as values only, and validated field by field:
+ * no text from here ever becomes a file on the thermostat.
  */
 
 export const MAX_BODY_BYTES = 4096;
@@ -89,6 +98,14 @@ export function publicSnapshot(snapshot: Snapshot): Record<string, unknown> {
 
 function publicState(state: ThermostatState): Record<string, unknown> {
   return Object.fromEntries(Object.entries(state).filter(([key]) => key !== 'raw'));
+}
+
+const VERSION = /^[0-9a-f]{64}$/;
+const VERSION_ID = /^[0-9TZ-]{1,32}$/;
+
+function programNumber(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isInteger(value)) throw new HttpError(400, 'invalid', { field: 'number' });
+  return value;
 }
 
 async function readBody(request: IncomingMessage): Promise<Body> {
@@ -164,6 +181,31 @@ async function route(method: string, path: string, body: Body, options: ControlS
       only(body, []);
       await controller.refreshFiles();
       return { ok: true };
+    case 'GET /v1/programs':
+      return controller.programsView();
+    case 'POST /v1/program/read':
+      only(body, ['number']);
+      return controller.readProgramToEdit(programNumber(body['number']));
+    case 'POST /v1/program/save': {
+      only(body, ['number', 'version', 'name', 'days']);
+      const { number, version, name, days } = body;
+      if (number === undefined) {
+        if (version !== undefined) throw new HttpError(400, 'invalid', { field: 'version' });
+        return controller.saveProgram({ name, days });
+      }
+      if (typeof version !== 'string' || !VERSION.test(version)) throw new HttpError(400, 'invalid', { field: 'version' });
+      return controller.saveProgram({ number: programNumber(number), version, name, days });
+    }
+    case 'POST /v1/program/delete':
+      only(body, ['number']);
+      await controller.deleteProgram(programNumber(body['number']));
+      return { ok: true };
+    case 'POST /v1/program/restore': {
+      only(body, ['number', 'id']);
+      const { id } = body;
+      if (typeof id !== 'string' || !VERSION_ID.test(id)) throw new HttpError(400, 'invalid', { field: 'id' });
+      return controller.restoreProgram(programNumber(body['number']), id);
+    }
     default:
       throw new HttpError(404, 'invalid');
   }
@@ -219,6 +261,8 @@ export async function startControlServer(options: ControlServerOptions): Promise
         if (error instanceof ValidationError) return send(response, 400, { error: 'invalid' });
         if (error instanceof CommandRejectedError) return send(response, 502, { error: 'rejected', code: error.code });
         if (error instanceof NotConnectedError) return send(response, 503, { error: 'not-connected' });
+        if (error instanceof ProgramEditError) return send(response, 409, { error: error.problem });
+        if (error instanceof ProgramWriteError) return send(response, 502, { error: 'program-write' });
         logger.warn(`control request ${method} ${path} failed: ${error instanceof Error ? error.message : String(error)}`);
         return send(response, 500, { error: 'failed' });
       });

@@ -2,6 +2,7 @@
 // All dynamic text is set with textContent: program names are typed by users.
 import { choiceFor, dayChoices, endInstant } from './end-time.js';
 import { drawIcons } from './icons.js';
+import { createProgramsTab } from './programs.js';
 
 const REFRESH_MS = 5_000;
 const SETPOINT = { min: 7, max: 40, step: 0.5 };
@@ -102,6 +103,7 @@ function setClass(node, className) {
 function showTab(name) {
   for (const button of document.querySelectorAll('[data-tab]')) button.classList.toggle('active', button.dataset.tab === name);
   for (const panel of document.querySelectorAll('[data-panel]')) panel.classList.toggle('ms-hidden', panel.dataset.panel !== name);
+  if (name === 'programs') void programsTab.load();
 }
 
 // ---------------------------------------------------------------------------
@@ -432,32 +434,22 @@ function wirePicker() {
 // ---------------------------------------------------------------------------
 // Programs and thermostat settings
 
-/** One program is in use at a time: a filled button marks it, the others offer to switch. */
+const programsTab = createProgramsTab({
+  $,
+  t,
+  element,
+  call,
+  locale,
+  degrees,
+  thermostatTime,
+  command: (payload) => command(payload),
+  refresh: () => refresh(),
+  snapshot: () => snapshot,
+});
+
+/** The list follows the programs on the thermostat, also when they change elsewhere. */
 function renderPrograms() {
-  const active = snapshot?.state?.programNumber;
-  whenChanged('programs', [snapshot?.programs, active], () => {
-    $('ms-programs').replaceChildren(
-      // Program 0 is the system program, which users cannot edit: only their own programs are listed.
-      ...(snapshot?.programs ?? []).filter((program) => program.number !== 0).map((program) => {
-        const item = element('div', undefined, 'ms-list-item');
-        const name = program.name ?? String(program.number);
-        const inUse = program.number === active;
-        const button = element('button', undefined, `ms-choice${inUse ? ' active' : ''}`);
-        button.setAttribute('aria-pressed', String(inUse));
-        if (inUse) {
-          const check = element('span');
-          check.dataset.icon = 'check';
-          button.append(check, element('span', t('ui.program.inUse')));
-          drawIcons(button);
-        } else {
-          button.append(element('span', t('ui.program.use')));
-          button.addEventListener('click', () => command({ action: 'auto', program: program.number }));
-        }
-        item.append(element('span', name), button);
-        return item;
-      }),
-    );
-  });
+  whenChanged('programs', [snapshot?.programs, snapshot?.state?.programNumber, snapshot?.configuration], () => void programsTab.load());
 }
 
 function renderThermostat() {
@@ -665,6 +657,7 @@ function wire() {
   }
   wireDial();
   wirePicker();
+  programsTab.wire();
   for (const radio of document.querySelectorAll('input[name="ms-manual-end"]')) {
     radio.addEventListener('change', () => {
       if (radio.value !== 'at' || !radio.checked) return;

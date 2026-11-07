@@ -133,6 +133,8 @@ export interface OutgoingMessage {
   readonly params?: readonly Readonly<Record<string, string>>[];
   /** Only for `command` style; `WHERE` is empty. */
   readonly who?: string;
+  /** A file to carry after the parameters, as plain text in a CDATA section (PROTOCOL.md §5.2). */
+  readonly file?: string;
 }
 
 /** Serialises a message to its single-line wire form. */
@@ -153,9 +155,11 @@ export function encodeMessage(message: OutgoingMessage): string {
       return `<Params${attributes.join('')} />`;
     })
     .join('');
+  if (message.file?.includes(']]>')) throw new ProtocolError('a file cannot hold the end of a CDATA section');
+  const file = message.file === undefined ? '' : `<Params><file_data encoded=""><![CDATA[${message.file}]]></file_data></Params>`;
 
   let paramList: string;
-  if (params !== '') paramList = `<ParamList>${params}</ParamList>`;
+  if (params !== '' || file !== '') paramList = `<ParamList>${params}${file}</ParamList>`;
   else paramList = command ? '<ParamList><Params /></ParamList>' : '<ParamList />';
 
   return (

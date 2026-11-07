@@ -44,6 +44,14 @@ export class CommandRejectedError extends XOpenError {
   }
 }
 
+/**
+ * The thermostat accepted a program, but reading it back shows something else.
+ * What it now holds is not what was asked: back up, restore or check it.
+ */
+export class ProgramWriteError extends XOpenError {
+  override name = 'ProgramWriteError';
+}
+
 /** An operation did not complete in time. */
 export class TimeoutError extends XOpenError {
   override name = 'TimeoutError';

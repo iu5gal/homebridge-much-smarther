@@ -25,6 +25,7 @@ export function controlRequest(
   method: 'GET' | 'POST',
   path: string,
   body?: Record<string, unknown>,
+  timeoutMs: number = TIMEOUT_MS,
 ): Promise<ControlResponse> {
   const payload = body === undefined ? undefined : JSON.stringify(body);
   return new Promise((resolve, reject) => {
@@ -33,7 +34,7 @@ export function controlRequest(
         socketPath: endpoint.socketPath,
         method,
         path,
-        timeout: TIMEOUT_MS,
+        timeout: timeoutMs,
         headers: {
           Authorization: `Bearer ${endpoint.key}`,
           ...(payload === undefined ? {} : { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }),

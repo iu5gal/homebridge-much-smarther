@@ -2,9 +2,10 @@ import { ValidationError } from './errors.js';
 import { encodeMessage } from './message.js';
 
 /**
- * The only messages this library can send (PROTOCOL.md §4–5). There is no
- * generic "send" on purpose: every value that reaches the thermostat goes
- * through one of these builders and their validation.
+ * The only messages this library can send (PROTOCOL.md §4–5), with the
+ * program writes of `program-file.ts`. There is no generic "send" on purpose:
+ * every value that reaches the thermostat goes through one of these builders
+ * and their validation.
  */
 
 export const MODES = ['AUTOMATIC', 'MANUAL', 'BOOST', 'PROTECTION', 'OFF'] as const;
@@ -30,7 +31,7 @@ export const PROTECTION_SETPOINT = 7;
 export const UNTIL_MAX_DAYS = 10;
 
 const WHO_THERMOREGULATION = '4';
-const WHO_FILES = '1004';
+export const WHO_FILES = '1004';
 
 /** The configuration file of the thermostat (PROTOCOL.md §5.2). */
 export const CONFIGURATION_FILE = 'device_configuration.xml';

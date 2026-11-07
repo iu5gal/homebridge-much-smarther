@@ -32,6 +32,7 @@ import {
   AuthenticationError,
   CommandRejectedError,
   NotConnectedError,
+  ProgramWriteError,
   ProtocolError,
   TimeoutError,
   ValidationError,
@@ -40,6 +41,14 @@ import {
 import { Framer, type Frame } from './framer.js';
 import { redactingLogger, silentLogger, type Logger } from './logger.js';
 import { decodeDocument, flattenParams, type XOpenMessage } from './message.js';
+import {
+  assertUserProgram,
+  buildEraseProgram,
+  buildSetProgram,
+  programMatchesDraft,
+  validateProgramDraft,
+  type ProgramDraftOptions,
+} from './program-file.js';
 import { toSecret, type Secret, type SecretInput } from './secret.js';
 import { parseDeviceState, parseProgramList, type ProgramSlot, type ThermostatState } from './state.js';
 
@@ -55,6 +64,10 @@ export interface XOpenClientOptions {
   readonly handshakeTimeoutMs?: number;
   /** A command without a response within this time drops the connection. */
   readonly commandTimeoutMs?: number;
+  /** The same for writing or erasing a program, which takes the device longer. */
+  readonly programWriteTimeoutMs?: number;
+  /** Minimum gap between two program writes: they go to the device's flash memory. */
+  readonly minProgramWriteIntervalMs?: number;
   readonly keepAliveIntervalMs?: number;
   /** Wait before the one retry of a command rejected as busy (`NackMsg` code 486). */
   readonly busyRetryDelayMs?: number;
@@ -77,6 +90,8 @@ export type XOpenClientEvents = {
   disconnected: [reason: Error];
   authenticationFailed: [error: AuthenticationError];
   state: [state: ThermostatState];
+  /** The thermostat reports a change in its list of programs (PROTOCOL.md §5.3). */
+  programsChanged: [];
 };
 
 type Settings = Required<Omit<XOpenClientOptions, 'password' | 'logger'>>;
@@ -86,6 +101,8 @@ const DEFAULTS: Omit<Settings, 'host'> = {
   connectTimeoutMs: 6_000,
   handshakeTimeoutMs: 10_000,
   commandTimeoutMs: 10_000,
+  programWriteTimeoutMs: 20_000,
+  minProgramWriteIntervalMs: 2_000,
   keepAliveIntervalMs: 10_000,
   busyRetryDelayMs: 1_000,
   minCommandIntervalMs: 250,
@@ -174,11 +191,10 @@ class Connection {
     return this.#step === 'ready' && !this.#closed;
   }
 
-  request(seqId: string, frame: string): Promise<XOpenMessage> {
+  request(seqId: string, frame: string, timeout = this.#context.settings.commandTimeoutMs): Promise<XOpenMessage> {
     if (!this.ready) return Promise.reject(new NotConnectedError('thermostat not connected'));
     if (this.#inFlight) return Promise.reject(new XOpenError('a command is already in flight'));
     return new Promise((resolve, reject) => {
-      const timeout = this.#context.settings.commandTimeoutMs;
       // The stream may now be out of step (a late answer without SeqID would
       // be matched to the next command), so a timeout drops the session.
       const timer = setTimeout(() => this.close(new TimeoutError(`no response within ${timeout} ms`)), timeout);
@@ -298,6 +314,8 @@ class Connection {
 
 interface QueuedCommand {
   readonly build: (seqId: string) => string;
+  /** Instead of `commandTimeoutMs`. */
+  readonly timeoutMs: number | undefined;
   readonly resolve: (message: XOpenMessage) => void;
   readonly reject: (error: Error) => void;
 }
@@ -323,6 +341,9 @@ export class XOpenClient extends EventEmitter<XOpenClientEvents> {
   #attempt = 0;
   #keepAliveTimer: NodeJS.Timeout | undefined;
   #reconnectTimer: NodeJS.Timeout | undefined;
+  /** Program writes run one at a time, each with its check. */
+  #programWrites: Promise<unknown> = Promise.resolve();
+  #lastProgramWriteAt = 0;
 
   constructor(options: XOpenClientOptions) {
     super();
@@ -441,6 +462,67 @@ export class XOpenClient extends EventEmitter<XOpenClientEvents> {
     };
   }
 
+  /**
+   * Writes a user program (`1`–`10`), reads it back and returns what the
+   * thermostat now holds. Throws `ValidationError` before sending anything,
+   * `CommandRejectedError` if it is refused, and `ProgramWriteError` if the
+   * thermostat holds something else afterwards. It is never sent twice, except
+   * once more after a "busy" answer. A write to the active program takes
+   * effect at once, with no command needed (PROTOCOL.md §5.3).
+   */
+  async writeProgram(input: unknown, options: ProgramDraftOptions = {}): Promise<ProgramProfile> {
+    const draft = validateProgramDraft(input, options);
+    return this.#oneProgramWrite(async () => {
+      await this.#command((seqId) => buildSetProgram(seqId, draft, options), this.#settings.programWriteTimeoutMs);
+      const stored = await this.getProgram(draft.number);
+      if (!programMatchesDraft(stored.value, draft)) {
+        throw new ProgramWriteError(`program ${draft.number} reads back different from what was written`);
+      }
+      await this.#readStateAfterWrite();
+      return stored.value;
+    });
+  }
+
+  /**
+   * Empties a user program (`1`–`10`) and checks that it is gone. The program
+   * in use cannot be erased: what the thermostat would do is not known.
+   */
+  async eraseProgram(number: number): Promise<void> {
+    assertUserProgram(number);
+    return this.#oneProgramWrite(async () => {
+      if ((await this.refreshState()).programNumber === number) {
+        throw new ValidationError('the program in use cannot be erased');
+      }
+      await this.#command((seqId) => buildEraseProgram(seqId, number), this.#settings.programWriteTimeoutMs);
+      const slot = (await this.getProgramList()).find((candidate) => candidate.number === number);
+      if (slot?.present !== false) throw new ProgramWriteError(`program ${number} is still there after erasing it`);
+      await this.#readStateAfterWrite();
+    });
+  }
+
+  /** The state may follow a write to the active program. The write already succeeded, so a failure here is only logged. */
+  async #readStateAfterWrite(): Promise<void> {
+    try {
+      await this.refreshState();
+    } catch (error) {
+      this.#log.warn(`could not read the state after a program write: ${String(error)}`);
+    }
+  }
+
+  #oneProgramWrite<T>(write: () => Promise<T>): Promise<T> {
+    const run = this.#programWrites.then(async () => {
+      const wait = this.#lastProgramWriteAt + this.#settings.minProgramWriteIntervalMs - Date.now();
+      if (wait > 0) await sleep(wait);
+      try {
+        return await write();
+      } finally {
+        this.#lastProgramWriteAt = Date.now();
+      }
+    });
+    this.#programWrites = run.catch(() => undefined);
+    return run;
+  }
+
   #logIssues<T>(what: string, parsed: ParsedFile<T>): ParsedFile<T> {
     for (const issue of parsed.issues) this.#log.warn(`${what}: ${issue}`);
     return parsed;
@@ -500,6 +582,7 @@ export class XOpenClient extends EventEmitter<XOpenClientEvents> {
 
   #onEvent(message: XOpenMessage): void {
     if (message.actionId === 'device_state') this.#applyState(message);
+    else if (message.actionId === 'device_program_number_list') this.emit('programsChanged');
     else this.#log.debug(`ignoring event ${message.actionId}`);
   }
 
@@ -521,7 +604,7 @@ export class XOpenClient extends EventEmitter<XOpenClientEvents> {
     });
   }
 
-  #command(build: (seqId: string) => string): Promise<XOpenMessage> {
+  #command(build: (seqId: string) => string, timeoutMs?: number): Promise<XOpenMessage> {
     if (this.#status !== 'ready' || !this.#connection?.ready) {
       return Promise.reject(new NotConnectedError('thermostat not connected'));
     }
@@ -529,7 +612,7 @@ export class XOpenClient extends EventEmitter<XOpenClientEvents> {
       return Promise.reject(new XOpenError('too many queued commands'));
     }
     return new Promise((resolve, reject) => {
-      this.#queue.push({ build, resolve, reject });
+      this.#queue.push({ build, timeoutMs, resolve, reject });
       void this.#drain();
     });
   }
@@ -542,11 +625,11 @@ export class XOpenClient extends EventEmitter<XOpenClientEvents> {
         const wait = this.#lastCommandAt + this.#settings.minCommandIntervalMs - Date.now();
         if (wait > 0) await sleep(wait);
         try {
-          let response = await this.#send(next.build);
+          let response = await this.#send(next);
           if (nackCode(response) === NACK_BUSY) {
             this.#log.warn('the thermostat is busy: retrying the command once');
             await sleep(this.#settings.busyRetryDelayMs);
-            response = await this.#send(next.build);
+            response = await this.#send(next);
           }
           if (response.actionId === 'NackMsg') next.reject(new CommandRejectedError(nackCode(response)));
           else next.resolve(response);
@@ -562,11 +645,11 @@ export class XOpenClient extends EventEmitter<XOpenClientEvents> {
   }
 
   /** Sends one command with a fresh SeqID on the current connection. */
-  #send(build: (seqId: string) => string): Promise<XOpenMessage> {
+  #send(command: QueuedCommand): Promise<XOpenMessage> {
     const connection = this.#connection;
     if (!connection?.ready) return Promise.reject(new NotConnectedError('thermostat not connected'));
     const seqId = randomUUID();
-    return connection.request(seqId, build(seqId));
+    return connection.request(seqId, command.build(seqId), command.timeoutMs);
   }
 
   #rejectQueued(reason: Error): void {
