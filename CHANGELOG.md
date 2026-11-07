@@ -6,6 +6,8 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-07
+
 ### Added
 
 - **Weekly programs on the setup page:** create, edit, duplicate and delete them. One screen, with the whole week in view: choose a day, its times and levels, and copy it to other days. Several programs can be open at once, and the one in use opens by itself.
