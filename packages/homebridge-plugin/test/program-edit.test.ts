@@ -158,6 +158,13 @@ describe('the program editor', () => {
       expect(cleanProgramName(typed)).toBe(saved);
     });
 
+    it('treats every character the same here and in the library', () => {
+      for (let code = 0; code <= 0x2ff; code += 1) {
+        const typed = `a${String.fromCharCode(code)}b`;
+        expect(cleanName(typed)).toBe(cleanProgramName(typed));
+      }
+    });
+
     it('leaves a name that was not changed', () => {
       expect(nameToSave('Caffè', 'Caffè')).toBe('Caffè');
       expect(nameToSave('Caffè 2', 'Caffè')).toBe('Caffe 2');

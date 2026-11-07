@@ -157,7 +157,7 @@ export function dayProblems(slots, maxSlots) {
 export function cleanName(name) {
   return name
     .normalize('NFD')
-    .replace(/[^ !#-%(-;=?-~]/g, '')
+    .replace(/[^\x20-\x7e]|[&<>"']/g, '')
     .replace(/ +/g, ' ')
     .trim()
     .slice(0, NAME_MAX)

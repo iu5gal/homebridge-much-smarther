@@ -204,6 +204,23 @@ describe('validateProgramDraft', () => {
   });
 });
 
+describe('the characters of a new name', () => {
+  const allowed = (code: number) => code >= 0x20 && code <= 0x7e && !'&<>"\''.includes(String.fromCharCode(code));
+
+  it('are printable ASCII without what has a meaning in XML', () => {
+    for (let code = 0; code <= 0x2ff; code += 1) {
+      const name = `a${String.fromCharCode(code)}b`;
+      if (allowed(code)) expect(validateProgramDraft(draft({ name })).name).toBe(name);
+      else expect(() => validateProgramDraft(draft({ name }))).toThrow(ValidationError);
+    }
+  });
+
+  it('cannot be a space at either end', () => {
+    for (const name of ['', ' ', ' a', 'a ']) expect(() => validateProgramDraft(draft({ name }))).toThrow(ValidationError);
+    expect(validateProgramDraft(draft({ name: 'a  b' })).name).toBe('a  b');
+  });
+});
+
 describe('cleanProgramName', () => {
   it('gives a name that can always be written, or nothing', () => {
     for (const typed of ['Caffè', 'a/b', ' x  y ', 'n'.repeat(64), `${'n'.repeat(31)} x`, 'Città & Mare']) {

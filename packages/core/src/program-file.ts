@@ -21,8 +21,8 @@ export const SLOTS_PER_DAY_MAX = 10;
 const SLOTS_PER_DAY_OLD_FIRMWARE = 8;
 const OLD_FIRMWARE = /^1\.0\./;
 
-/** Printable ASCII without what has a meaning in XML. Accents and other scripts are not known to be safe. */
-const NEW_NAME = /^[!#-%(-;=?-~](?:[ !#-%(-;=?-~]*[!#-%(-;=?-~])?$/;
+/** A new name is printable ASCII without what has a meaning in XML. Accents and other scripts are not known to be safe. */
+const NOT_IN_NEW_NAME = /[^\x20-\x7e]|[&<>"']/g;
 // A name already on the thermostat may hold more than a new one, such as "/".
 // eslint-disable-next-line no-control-regex -- matching control characters is the point
 const NAME_FORBIDDEN = /[\u0000-\u001f\u007f<>]/;
@@ -72,7 +72,7 @@ export function assertUserProgram(number: unknown): asserts number is number {
 export function cleanProgramName(name: string): string {
   return name
     .normalize('NFD')
-    .replace(/[^ !#-%(-;=?-~]/g, '')
+    .replace(NOT_IN_NEW_NAME, '')
     .replace(/ +/g, ' ')
     .trim()
     .slice(0, PROGRAM_NAME_MAX_LENGTH)
@@ -84,7 +84,7 @@ function validName(name: unknown, existingName: string | undefined): string {
   if (name === existingName && name.trim() !== '' && name.length <= EXISTING_NAME_MAX_LENGTH && !NAME_FORBIDDEN.test(name)) {
     return name;
   }
-  if (!NEW_NAME.test(name) || name.length > PROGRAM_NAME_MAX_LENGTH) {
+  if (name === '' || name !== name.trim() || name.replace(NOT_IN_NEW_NAME, '') !== name || name.length > PROGRAM_NAME_MAX_LENGTH) {
     throw new ValidationError(`the program name must be 1–${PROGRAM_NAME_MAX_LENGTH} plain letters, digits, spaces or symbols`);
   }
   return name;
