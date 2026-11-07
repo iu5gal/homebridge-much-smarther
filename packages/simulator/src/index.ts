@@ -343,6 +343,11 @@ export class FakeThermostat {
     this.#broadcastState();
   }
 
+  /** Announces a change in the list of programs, as if made in the app. */
+  announceProgramChange(): void {
+    this.#announcePrograms();
+  }
+
   /** Sends raw bytes to every client, for protocol-violation tests. */
   sendRaw(data: string): void {
     for (const session of this.#sessions) session.socket.write(data);
@@ -524,6 +529,18 @@ export class FakeThermostat {
 
   /** The device announces the change, and the active program takes effect at once (PROTOCOL.md §5.3). */
   #afterProgramWrite(name: string): void {
+    this.#announcePrograms();
+    if (name !== `device_program_profile_${this.#params.get('program_number')}.xml`) return;
+    const setpoint = this.#activeProgramSetpoint();
+    if (setpoint === undefined) return;
+    this.#programSetpoint = setpoint;
+    if (this.#params.get('mode') !== 'AUTOMATIC' || this.#params.get('setpoint') === setpoint) return;
+    this.#params.set('setpoint', setpoint);
+    this.#updateLoad();
+    this.#broadcastState();
+  }
+
+  #announcePrograms(): void {
     for (const session of this.#sessions) {
       if (session.step !== 'ready') continue;
       this.#send(session, {
@@ -535,14 +552,6 @@ export class FakeThermostat {
         who: '4',
       });
     }
-    if (name !== `device_program_profile_${this.#params.get('program_number')}.xml`) return;
-    const setpoint = this.#activeProgramSetpoint();
-    if (setpoint === undefined) return;
-    this.#programSetpoint = setpoint;
-    if (this.#params.get('mode') !== 'AUTOMATIC' || this.#params.get('setpoint') === setpoint) return;
-    this.#params.set('setpoint', setpoint);
-    this.#updateLoad();
-    this.#broadcastState();
   }
 
   #activeProgramSetpoint(): string | undefined {

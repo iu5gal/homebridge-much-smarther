@@ -115,6 +115,50 @@
     .ms .ms-choice:hover { border-color: var(--ms-green); color: var(--ms-green); }
     .ms .ms-choice.active { background: var(--ms-green); border-color: var(--ms-green); color: #fff; cursor: default; }
     .ms .ms-choice .ms-icon { width: 1rem; height: 1rem; }
+    .ms [data-level='DAY'] { --level: var(--ms-orange); }
+    .ms [data-level='NIGHT'] { --level: #4c5fd5; }
+    .ms [data-level='AWAY'] { --level: #2aa198; }
+    .ms [data-level='PROTECTION'] { --level: #9aa0a6; }
+    .ms .ms-program { padding: 0.8rem 0; border-bottom: 1px solid var(--ms-line); }
+    .ms .ms-program:last-child { border-bottom: none; padding-bottom: 0; }
+    .ms .ms-program-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+    .ms .ms-program-name { font-weight: 600; overflow-wrap: anywhere; }
+    .ms .ms-program-actions { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.35rem; margin-inline-start: -0.5rem; }
+    .ms .ms-week { display: flex; flex-direction: column; gap: 1px; }
+    .ms .ms-week-row { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); align-items: center; gap: 0.4rem; width: 100%; padding: 0 0.25rem; border: 1px solid transparent; border-radius: 0.4rem; background: none; color: inherit; text-align: start; font-size: 0.75rem; line-height: 1.15; }
+    .ms button.ms-week-row { padding-block: 0.3rem; }
+    .ms button.ms-week-row:hover { background: var(--ms-soft); }
+    .ms .ms-week-row.active { border-color: var(--ms-accent); background: var(--ms-soft); font-weight: 600; }
+    .ms .ms-week-day { opacity: 0.8; white-space: nowrap; overflow: hidden; }
+    .ms .ms-bar { display: flex; height: 0.75rem; border-radius: 0.2rem; overflow: hidden; gap: 1px; }
+    .ms button.ms-week-row .ms-bar { height: 1.1rem; }
+    .ms .ms-stretch { flex: 0 0 0; min-width: 1px; background: var(--level); }
+    .ms .ms-week-axis { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 0.4rem; padding: 0 0.25rem; }
+    .ms .ms-axis-hours { display: flex; justify-content: space-between; opacity: 0.6; }
+    .ms .ms-axis-hours small { font-size: 0.68rem; }
+    .ms .ms-legend { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; font-size: 0.85rem; }
+    .ms .ms-legend-item { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .ms .ms-level-dot { width: 0.7rem; height: 0.7rem; border-radius: 50%; flex: none; background: var(--level); }
+    .ms .ms-program-day { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--ms-line); }
+    .ms .ms-program-day-title { font-weight: 600; margin-bottom: 0.5rem; text-transform: capitalize; }
+    .ms .ms-slot { display: grid; grid-template-columns: 0.7rem max-content 8.2rem minmax(0, 15rem) 2.1rem; align-items: center; gap: 0.45rem; margin-bottom: 0.45rem; min-height: 2.1rem; }
+    .ms .ms-slot-time { display: inline-flex; align-items: center; gap: 0.2rem; }
+    .ms .ms-slot-time.ms-fixed { padding-inline-start: 0.5rem; }
+    /* Hours and minutes stay left to right in every language, so their arrows do too. */
+    .ms .ms-slot-time select, .ms[dir='rtl'] .ms-slot-time select { flex: 1 1 0; min-width: 0; padding: 0.25rem 1.5rem 0.25rem 0.5rem; background-position: right 0.3rem center; }
+    @media (max-width: 30rem) {
+      .ms .ms-slot { grid-template-columns: 0.7rem max-content 8.2rem 2.1rem; }
+      .ms .ms-slot-level { grid-column: 2 / 4; grid-row: 2; }
+      .ms .ms-slot { padding-bottom: 0.45rem; border-bottom: 1px solid var(--ms-soft); }
+      .ms .ms-slot-remove { grid-column: 4; grid-row: 1 / 3; }
+    }
+    .ms .ms-problem { color: var(--ms-red); font-size: 0.85rem; margin-bottom: 0.45rem; }
+    .ms .ms-copy { margin-top: 0.9rem; }
+    .ms .ms-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .ms .ms-chip { min-width: 2.7rem; padding: 0.3rem 0.55rem; border: 1px solid var(--ms-line); border-radius: 2rem; background: none; color: inherit; font-size: 0.85rem; }
+    .ms .ms-chip:hover { background: var(--ms-soft); }
+    .ms .ms-chip-wide { padding-inline: 0.85rem; }
+    .ms .ms-editor-footer { margin-top: 1.1rem; }
 
     /* Thermostat */
     .ms .ms-compact { margin-bottom: 0; }
@@ -277,11 +321,27 @@
 
   <!-- Programs -->
   <div data-panel="programs">
-    <div class="card">
-      <div class="card-body py-2">
-        <div id="ms-programs"></div>
+    <div id="ms-program-list-view">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-end">
+            <button id="ms-program-new" class="ms-btn ms-btn-small ms-btn-primary"><span data-icon="plus"></span><span data-i18n="ui.program.new"></span></button>
+          </div>
+          <div id="ms-programs"></div>
+          <div id="ms-program-legend" class="mt-3"></div>
+          <div class="ms-hint mt-1" data-i18n="ui.program.levelsHint"></div>
+        </div>
+      </div>
+      <div id="ms-program-versions-box" class="card ms-hidden">
+        <div class="card-body py-2">
+          <details>
+            <summary data-i18n="ui.program.versions"></summary>
+            <div id="ms-program-versions" class="mt-1"></div>
+          </details>
+        </div>
       </div>
     </div>
+    <div id="ms-program-editor" class="ms-hidden"></div>
   </div>
 
   <!-- Thermostat settings and diagnostics -->

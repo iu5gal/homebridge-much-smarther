@@ -55,6 +55,58 @@ describe('setup UI handlers', () => {
     expect(await h['/i18n']?.({ language: 'ar' })).toMatchObject({ messages: MESSAGES.ar, rtl: true });
   });
 
+  describe('programs', () => {
+    it('passes each request to the plugin, as it is', async () => {
+      const h = handlers();
+      const program = { number: 2, version: 'v', name: 'Mine', days: {} };
+      reply = () => ({ status: 200, body: { done: true } });
+      await expect(h['/programs']?.(undefined)).resolves.toEqual({ done: true });
+      await h['/program/read']?.({ number: 2 });
+      await h['/program/save']?.(program);
+      await h['/program/delete']?.({ number: 2 });
+      await h['/program/restore']?.({ number: 2, id: 'x' });
+      expect(calls).toEqual([
+        { method: 'GET', path: '/v1/programs' },
+        { method: 'POST', path: '/v1/program/read', body: { number: 2 } },
+        { method: 'POST', path: '/v1/program/save', body: program },
+        { method: 'POST', path: '/v1/program/delete', body: { number: 2 } },
+        { method: 'POST', path: '/v1/program/restore', body: { number: 2, id: 'x' } },
+      ]);
+    });
+
+    it.each([
+      ['conflict', 'ui.error.program-conflict'],
+      ['full', 'ui.error.program-full'],
+      ['in-use', 'ui.error.program-in-use'],
+      ['no-version', 'ui.error.program-no-version'],
+      ['program-write', 'ui.error.program-write'],
+      ['invalid', 'ui.error.invalid'],
+      ['not-connected', 'ui.error.not-connected'],
+      ['unavailable', 'ui.error.failed'],
+    ])('turns %s into its message', async (error, key) => {
+      reply = () => ({ status: 409, body: { error } });
+      await expect(handlers()['/program/save']?.({})).rejects.toMatchObject({ key });
+    });
+
+    it('gives a write more time than other requests', async () => {
+      const timeouts: (number | undefined)[] = [];
+      const h = createUiHandlers({
+        storagePath: storage,
+        retrievePswOpen: (u, p) => retrieve(u, p),
+        request: async (_endpoint, _method, _path, _body, timeoutMs) => {
+          timeouts.push(timeoutMs);
+          return { status: 200, body: {} };
+        },
+      });
+      await h['/programs']?.(undefined);
+      await h['/program/read']?.({ number: 2 });
+      await h['/program/save']?.({});
+      await h['/program/delete']?.({});
+      await h['/program/restore']?.({});
+      expect(timeouts).toEqual([undefined, undefined, 60_000, 60_000, 60_000]);
+    });
+  });
+
   it('lists every language by its own name, for the language menu', async () => {
     const { languages } = (await handlers()['/i18n']?.({})) as { languages: { code: string; name: string }[] };
     expect(languages.map((language) => language.code)).toEqual([...LANGUAGES]);

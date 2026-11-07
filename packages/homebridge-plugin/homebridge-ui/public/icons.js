@@ -14,6 +14,10 @@ const SHAPES = {
   up: '<path d="M6 15l6-6 6 6"/>',
   down: '<path d="M6 9l6 6 6-6"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  pencil: '<path d="M4 20l1-4.5L16.5 4a2.1 2.1 0 0 1 3 3L8 18.5z"/><path d="M14.5 6l3.5 3.5"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5.5 15H5a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 5 3.5h8.5A1.5 1.5 0 0 1 15 5v.5"/>',
+  trash: '<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/>',
 };
 
 /** Fills every `[data-icon]` element with its icon. */

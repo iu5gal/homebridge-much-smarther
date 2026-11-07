@@ -36,6 +36,11 @@ type Handler = (payload: unknown) => Promise<unknown>;
 /** How long a thermostat found in the cloud can be chosen. */
 export const CHOICE_TTL_MS = 5 * 60_000;
 const COMMANDS = new Set(['manual', 'boost', 'off', 'auto', 'season', 'refresh', 'reload']);
+/**
+ * Saving a program can take a while: a first copy of all programs, the write, and
+ * reading it back. It must not be reported as failed while it may still succeed.
+ */
+const PROGRAM_EDIT_TIMEOUT_MS = 60_000;
 const MAX_CREDENTIAL_LENGTH = 256;
 
 function record(payload: unknown): Record<string, unknown> {
@@ -62,6 +67,16 @@ function errorFromControl(response: ControlResponse): UiError {
       return new UiError('ui.error.rejected', typeof response.body['code'] === 'number' ? { code: response.body['code'] } : {});
     case 'invalid':
       return new UiError('ui.error.invalid');
+    case 'conflict':
+      return new UiError('ui.error.program-conflict');
+    case 'full':
+      return new UiError('ui.error.program-full');
+    case 'in-use':
+      return new UiError('ui.error.program-in-use');
+    case 'no-version':
+      return new UiError('ui.error.program-no-version');
+    case 'program-write':
+      return new UiError('ui.error.program-write');
     default:
       return new UiError('ui.error.failed');
   }
@@ -74,11 +89,11 @@ export function createUiHandlers(deps: UiDependencies): Record<string, Handler> 
   /** Thermostats found in the cloud, waiting for the user's choice. Kept in memory only. */
   let choices = new Map<string, { pin: Secret; expires: number }>();
 
-  const control = async (method: 'GET' | 'POST', path: string, body?: Record<string, unknown>) => {
+  const control = async (method: 'GET' | 'POST', path: string, body?: Record<string, unknown>, timeoutMs?: number) => {
     try {
       const key = store.readControlKey();
       if (key === undefined) throw new ControlUnavailableError('plugin not running');
-      const response = await send({ socketPath: store.socketPath, key }, method, path, body);
+      const response = await send({ socketPath: store.socketPath, key }, method, path, body, timeoutMs);
       if (response.status !== 200) throw errorFromControl(response);
       return response.body;
     } catch (error) {
@@ -167,5 +182,11 @@ export function createUiHandlers(deps: UiDependencies): Record<string, Handler> 
       if (typeof action !== 'string' || !COMMANDS.has(action)) throw new UiError('ui.error.invalid');
       return control('POST', `/v1/${action}`, args);
     },
+
+    '/programs': () => control('GET', '/v1/programs'),
+    '/program/read': (payload) => control('POST', '/v1/program/read', record(payload)),
+    '/program/save': (payload) => control('POST', '/v1/program/save', record(payload), PROGRAM_EDIT_TIMEOUT_MS),
+    '/program/delete': (payload) => control('POST', '/v1/program/delete', record(payload), PROGRAM_EDIT_TIMEOUT_MS),
+    '/program/restore': (payload) => control('POST', '/v1/program/restore', record(payload), PROGRAM_EDIT_TIMEOUT_MS),
   };
 }

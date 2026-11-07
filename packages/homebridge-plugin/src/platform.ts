@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 import type { API, DynamicPlatformPlugin, Logging, PlatformAccessory, PlatformConfig } from 'homebridge';
 import { showNoResponse, ThermostatAccessory } from './accessory.js';
 import { startControlServer } from './control-server.js';
 import { ThermostatController } from './controller.js';
 import { translator } from './i18n.js';
 import { PinStore } from './pin-store.js';
+import { ProgramBackups } from './program-backups.js';
 import { parseSettings, SettingsError, type Settings } from './settings.js';
 
 export const PLUGIN_NAME = 'homebridge-much-smarther';
@@ -85,7 +87,11 @@ export class MuchSmartherPlatform implements DynamicPlatformPlugin {
 
     const store = new PinStore(this.#api.user.storagePath());
     this.#store = store;
-    const controller = new ThermostatController({ settings, logger: this.#log });
+    const controller = new ThermostatController({
+      settings,
+      logger: this.#log,
+      programBackups: new ProgramBackups(join(store.directory, 'program-backups')),
+    });
     this.#controller = controller;
     new ThermostatAccessory({
       hap,
