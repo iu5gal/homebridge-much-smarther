@@ -256,6 +256,8 @@ export interface ProgramProfile {
   readonly name?: string;
   readonly type?: 'DAILY' | 'WEEKLY';
   readonly valid?: boolean;
+  /** `YYYY-MM-DDTHH:MM:SS`, kept when the program is edited. */
+  readonly createdAt?: string;
   /** Slots of each day, sorted by time. A day without slots keeps the preset of the day before. */
   readonly days: Readonly<Record<Weekday, readonly TimeSlot[]>>;
 }
@@ -263,6 +265,7 @@ export interface ProgramProfile {
 const MAX_SLOTS_PER_DAY = 16;
 const SLOT_TIME = /^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
 const PROGRAM_TYPE = /^(?:DAILY|WEEKLY)$/;
+const CREATION_DATE = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$/;
 // Names are typed by the user: printable characters only, no markup.
 // eslint-disable-next-line no-control-regex -- matching control characters is the point
 const NAME_FORBIDDEN = /[\u0000-\u001f\u007f<>]/;
@@ -306,6 +309,7 @@ export function parseProgramProfile(text: string): ParsedFile<ProgramProfile> {
     name,
     type: read.match([...description, 'type'], PROGRAM_TYPE) as 'DAILY' | 'WEEKLY' | undefined,
     valid: validText === undefined ? undefined : validText === 'TRUE',
+    createdAt: read.match([...description, 'creation_date'], CREATION_DATE),
     days,
   });
   if (number !== undefined && number > PROGRAM_NUMBER_MAX) read.issues.push('invalid program_description/number');

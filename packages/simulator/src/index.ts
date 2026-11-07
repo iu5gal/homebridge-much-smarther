@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import net from 'node:net';
 import {
+  activePreset,
   BOOST_MINUTES,
   bytesToDecimalText,
   clientDigest,
@@ -12,7 +13,10 @@ import {
   Framer,
   FUNCTIONS,
   isValidSetpoint,
+  levelTemperature,
   MODES,
+  parseConfiguration,
+  parseProgramProfile,
   Secret,
   serverDigest,
   type OutgoingMessage,
@@ -27,8 +31,9 @@ import {
  * Where the real device has been observed (PROTOCOL.md, [OBS]) the fake
  * copies it: grouped parameters, setpoints padded to five decimals, a
  * trailing `AckMsg` after every data response, "Off" as `PROTECTION` at the
- * protection temperature, no `boostTime` in reports, and a single local
- * session at a time.
+ * protection temperature, no `boostTime` in reports, a single local session
+ * at a time, empty program slots that can be read, and program writes that
+ * take effect at once.
  */
 
 export interface FakeThermostatBehaviour {
@@ -52,6 +57,14 @@ export interface FakeThermostatBehaviour {
   duplicateEvents?: boolean;
   /** Send program files with a wrong `sha256sum` too (the configuration always has one). */
   badFileChecksum?: boolean;
+  /** Delay before the answer to a program write. */
+  fileWriteDelayMs?: number;
+  /** Answer every program write with `NackMsg` code 430. */
+  rejectFileWrites?: boolean;
+  /** Answer program writes with `AckMsg`, but keep the old file. */
+  ignoreFileWrites?: boolean;
+  /** Store written program names damaged, as the device does with a name of 64 characters. */
+  damageWrittenNames?: boolean;
   /** Accept a second connection while one is open; the real device closes it at once. */
   allowSeveralSessions?: boolean;
 }
@@ -109,6 +122,7 @@ const SET_PARAMS: ReadonlySet<string> = new Set([
   'setpoint',
   'program_number',
 ]);
+const NACK_MALFORMED = '400';
 const NACK_INVALID_PARAMETERS = '430';
 const NACK_BUSY = '486';
 const NACK_UNKNOWN = '404';
@@ -194,6 +208,20 @@ export function syntheticProgram(number: number): string {
   );
 }
 
+/** An empty slot as the device reports it: a real file marked as not valid (PROTOCOL.md §5.2). */
+export function emptyProgram(number: number): string {
+  return (
+    '<program_profile>' +
+    `<filename>device_program_profile_${number}.xml</filename>` +
+    '<program_description><is_program_profile_valid>FALSE</is_program_profile_valid>' +
+    `<number>${number}</number><name>${number}</name><type>WEEKLY</type>` +
+    '<is_creation_date_valid>FALSE</is_creation_date_valid><creation_date>2000-01-01T00:00:00</creation_date>' +
+    '</program_description><weekday>' +
+    WEEKDAYS.map((day) => `<${day}><slot id="0" preset="PROTECTION" time="00:00" /></${day}>`).join('') +
+    '</weekday></program_profile>'
+  );
+}
+
 /** Synthetic diagnostics. */
 export const DIAGNOSTIC_PARAMS: readonly Readonly<Record<string, string>>[] = [
   { application_firmware_version: '1.2.3' },
@@ -233,11 +261,16 @@ export class FakeThermostat {
   lastSet: ReadonlyMap<string, string> | undefined;
   /** Parameters of every `SET device_state` received, in order. */
   readonly sets: ReadonlyMap<string, string>[] = [];
+  /** File names of every `SET device_file` received, accepted or not. */
+  readonly fileWrites: string[] = [];
 
   readonly #password: Secret;
   readonly #params: Map<string, string>;
   readonly #protectionSetpoint: string;
-  readonly #programs: ReadonlySet<number>;
+  /** The file of every slot, also of the empty ones. */
+  readonly #programFiles = new Map<number, string>();
+  /** The slots in use, with the time of their last change. */
+  readonly #programChanges = new Map<number, string>();
   readonly #utcOffsetMinutes: number | undefined;
   /** Setpoint of the current program slot, restored on return to `AUTOMATIC`. */
   #programSetpoint: string;
@@ -249,7 +282,11 @@ export class FakeThermostat {
     this.#params = new Map(Object.entries({ ...DEFAULT_PARAMS, ...options.params }));
     this.#programSetpoint = this.#params.get('setpoint') ?? DEFAULT_PARAMS['setpoint'] ?? '';
     this.#protectionSetpoint = (options.protectionTemperature ?? 7).toFixed(5);
-    this.#programs = new Set(options.programs ?? [0, 1, 2, 3]);
+    const programs = new Set(options.programs ?? [0, 1, 2, 3]);
+    for (let slot = 0; slot < PROGRAM_SLOTS; slot++) {
+      this.#programFiles.set(slot, programs.has(slot) ? syntheticProgram(slot) : emptyProgram(slot));
+      if (programs.has(slot)) this.#programChanges.set(slot, slot === 0 ? '' : '2026-01-01T08:00:00+01:00');
+    }
     this.#utcOffsetMinutes = options.utcOffsetMinutes;
     this.behaviour = { ...options.behaviour };
   }
@@ -384,7 +421,10 @@ export class FakeThermostat {
       }
       case 'ready':
         this.commands.push(message.actionId);
-        this.#later(() => this.#command(session, message, params));
+        this.#later(
+          () => this.#command(session, message, params),
+          message.service === 'SET' && message.actionId === 'device_file' ? this.behaviour.fileWriteDelayMs : undefined,
+        );
         return;
     }
   }
@@ -436,9 +476,86 @@ export class FakeThermostat {
         if (accepted) this.#broadcastState();
         return;
       }
+      case 'SET device_file': {
+        this.fileWrites.push(params.get('file_name') ?? '');
+        if ((this.behaviour.busySets ?? 0) > 0) {
+          this.behaviour.busySets = (this.behaviour.busySets ?? 0) - 1;
+          this.#send(session, this.#nack(seqId, NACK_BUSY));
+          return;
+        }
+        const refusal = this.#writeProgramFile(params, message.fileData?.text);
+        this.#send(session, refusal === undefined ? this.#reply(seqId, 'AckMsg') : this.#nack(seqId, refusal));
+        if (refusal === undefined) this.#afterProgramWrite(params.get('file_name') ?? '');
+        return;
+      }
       default:
         this.#send(session, this.#nack(seqId, NACK_UNKNOWN));
     }
+  }
+
+  /** Stores a written program. Returns the `NackMsg` code when it is refused. */
+  #writeProgramFile(params: ReadonlyMap<string, string>, text: string | undefined): string | undefined {
+    const name = params.get('file_name') ?? '';
+    const slot = /^device_program_profile_([1-9]|10)\.xml$/.exec(name)?.[1];
+    if (slot === undefined || text === undefined || this.behaviour.rejectFileWrites) return NACK_INVALID_PARAMETERS;
+    const checksum = createHash('sha256').update(text, 'utf8').digest('hex');
+    if (params.get('sha256sum') !== checksum) return NACK_MALFORMED;
+    const number = Number(slot);
+    if (this.behaviour.ignoreFileWrites) return undefined;
+    if (text === 'ERASE') {
+      this.#programFiles.set(number, emptyProgram(number));
+      this.#programChanges.delete(number);
+      return undefined;
+    }
+    let profile;
+    try {
+      profile = parseProgramProfile(text);
+    } catch {
+      return NACK_INVALID_PARAMETERS;
+    }
+    if (profile.value.number !== number || profile.value.valid !== true) return NACK_INVALID_PARAMETERS;
+    const tooLong = (/<name>([^<]*)<\/name>/.exec(text)?.[1]?.length ?? 0) >= 64;
+    const stored =
+      tooLong || this.behaviour.damageWrittenNames ? text.replace('</name>', `/micro_fs/${name}</name>`) : text;
+    this.#programFiles.set(number, stored);
+    this.#programChanges.set(number, deviceTimestamp(new Date(), this.#utcOffsetMinutes));
+    return undefined;
+  }
+
+  /** The device announces the change, and the active program takes effect at once (PROTOCOL.md §5.3). */
+  #afterProgramWrite(name: string): void {
+    for (const session of this.#sessions) {
+      if (session.step !== 'ready') continue;
+      this.#send(session, {
+        style: 'command',
+        service: 'EVT',
+        seqId: randomUUID().toUpperCase(),
+        progress: 0,
+        actionId: 'device_program_number_list',
+        who: '4',
+      });
+    }
+    if (name !== `device_program_profile_${this.#params.get('program_number')}.xml`) return;
+    const setpoint = this.#activeProgramSetpoint();
+    if (setpoint === undefined) return;
+    this.#programSetpoint = setpoint;
+    if (this.#params.get('mode') !== 'AUTOMATIC' || this.#params.get('setpoint') === setpoint) return;
+    this.#params.set('setpoint', setpoint);
+    this.#updateLoad();
+    this.#broadcastState();
+  }
+
+  #activeProgramSetpoint(): string | undefined {
+    const file = this.#programFiles.get(Number(this.#params.get('program_number')));
+    if (file === undefined) return undefined;
+    const now = new Date();
+    const preset = activePreset(parseProgramProfile(file).value, now, {
+      ...(this.#utcOffsetMinutes === undefined ? {} : { utcOffsetMinutes: this.#utcOffsetMinutes }),
+    });
+    if (preset === undefined) return undefined;
+    const { heating, cooling } = parseConfiguration(syntheticConfiguration(Number(this.#protectionSetpoint))).value;
+    const temperature = levelTemperature(this.#params.get('function') === 'COOLING' ? cooling : heating, preset);
+    return temperature?.toFixed(5);
   }
 
   #applySet(message: XOpenMessage, params: ReadonlyMap<string, string>): boolean {
@@ -509,16 +626,16 @@ export class FakeThermostat {
   #file(name: string): string | undefined {
     if (name === 'device_configuration.xml') return syntheticConfiguration(Number(this.#protectionSetpoint));
     const match = /^device_program_profile_([0-9]|10)\.xml$/.exec(name);
-    const number = Number(match?.[1]);
-    return match && this.#programs.has(number) ? syntheticProgram(number) : undefined;
+    return match ? this.#programFiles.get(Number(match[1])) : undefined;
   }
 
   #programList(): Record<string, string>[] {
-    return Array.from({ length: PROGRAM_SLOTS }, (_, slot) =>
-      this.#programs.has(slot)
-        ? { [`program_${slot}_present`]: 'TRUE', timestamp: slot === 0 ? '' : '2026-01-01T08:00:00+01:00' }
-        : { [`program_${slot}_present`]: 'FALSE' },
-    );
+    return Array.from({ length: PROGRAM_SLOTS }, (_, slot) => {
+      const changed = this.#programChanges.get(slot);
+      return changed === undefined
+        ? { [`program_${slot}_present`]: 'FALSE' }
+        : { [`program_${slot}_present`]: 'TRUE', timestamp: changed };
+    });
   }
 
   #broadcastState(): void {
@@ -572,8 +689,8 @@ export class FakeThermostat {
     };
   }
 
-  #later(action: () => void): void {
-    const delay = this.behaviour.responseDelayMs ?? 0;
+  #later(action: () => void, delayMs?: number): void {
+    const delay = delayMs ?? this.behaviour.responseDelayMs ?? 0;
     if (delay > 0) setTimeout(action, delay);
     else action();
   }

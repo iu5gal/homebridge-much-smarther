@@ -252,12 +252,12 @@ describe('XOpenClient against the simulator', () => {
     for (const personal of Object.values(FAKE_PERSONAL_VALUES)) expect(exposed).not.toContain(personal);
   });
 
-  it('reads the programs that exist and rejects the others', async () => {
+  it('reads the programs, also an empty slot, and refuses other files', async () => {
     const c = await connect();
     const program = await c.getProgram(1);
     expect(program.value).toMatchObject({ number: 1, name: 'Program 1', type: 'WEEKLY' });
     expect(program.value.days.sunday).toHaveLength(3);
-    await expect(c.getProgram(7)).rejects.toMatchObject({ code: 430 });
+    await expect(c.getProgram(7)).resolves.toMatchObject({ value: { number: 7, valid: false } });
     await expect(c.getProgram(11)).rejects.toBeInstanceOf(ValidationError);
     await expect(c.readDeviceFile('firmware_descriptor.txt')).rejects.toBeInstanceOf(ValidationError);
     await expect(c.readDeviceFile('device_program_profile_2.xml')).resolves.toMatchObject({
