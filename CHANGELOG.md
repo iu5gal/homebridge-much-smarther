@@ -6,9 +6,12 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-08
+
 ### Changed
 
 - The GitHub repository is now called `homebridge-much-smarther`, like the npm package. Old links keep working.
+- The package's homepage is now the author's site. The plugin itself does not change.
 
 ## [0.2.1] - 2026-11-08
 
