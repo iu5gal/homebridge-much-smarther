@@ -6,6 +6,12 @@ Each released version gets a section `## [x.y.z] - YYYY-MM-DD`; the release work
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-08
+
+### Changed
+
+- The package page on npm shows the *Verified by Homebridge* badge, the Ko-fi button and the current status of the project. Documentation only: the plugin itself does not change.
+
 ## [0.2.0] - 2026-11-07
 
 ### Added
