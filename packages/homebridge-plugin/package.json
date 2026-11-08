@@ -6,12 +6,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iu5gal/much-smarther-bridge.git",
+    "url": "git+https://github.com/iu5gal/homebridge-much-smarther.git",
     "directory": "packages/homebridge-plugin"
   },
-  "homepage": "https://github.com/iu5gal/much-smarther-bridge#readme",
+  "homepage": "https://github.com/iu5gal/homebridge-much-smarther#readme",
   "bugs": {
-    "url": "https://github.com/iu5gal/much-smarther-bridge/issues"
+    "url": "https://github.com/iu5gal/homebridge-much-smarther/issues"
   },
   "funding": {
     "type": "ko-fi",

@@ -65,7 +65,7 @@ sudo systemctl restart homebridge
 
 ### From a package file
 
-Instead of the Homebridge UI, you can install the package attached to a release, for example to try a version by hand. Download `homebridge-much-smarther-<version>.tgz` from the [releases page](https://github.com/iu5gal/much-smarther-bridge/releases). Copy it to the Pi, for example with `scp`, then on the Pi:
+Instead of the Homebridge UI, you can install the package attached to a release, for example to try a version by hand. Download `homebridge-much-smarther-<version>.tgz` from the [releases page](https://github.com/iu5gal/homebridge-much-smarther/releases). Copy it to the Pi, for example with `scp`, then on the Pi:
 
 ```sh
 sudo install -d -o homebridge -g homebridge /var/lib/homebridge/local-packages

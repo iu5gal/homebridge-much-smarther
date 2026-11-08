@@ -4,17 +4,17 @@
 
 [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/iu5gal)
 
-![Much Smarther Bridge: the first-generation BTicino Smarther X8000 in Apple Home, over your local network](https://raw.githubusercontent.com/iu5gal/much-smarther-bridge/main/docs/images/social-preview.png)
+![Much Smarther Bridge: the first-generation BTicino Smarther X8000 in Apple Home, over your local network](https://raw.githubusercontent.com/iu5gal/homebridge-much-smarther/main/docs/images/social-preview.png)
 
 > **Only for the first-generation Smarther, model X8000.** The later Smarther2 with Netatmo is a different product and is not supported.
 
-Homebridge plugin for the **first-generation** BTicino Smarther thermostat, model **X8000**, over its local protocol: no cloud at runtime. It uses the client in [`@much-smarther/core`](https://github.com/iu5gal/much-smarther-bridge/blob/main/packages/core/README.md).
+Homebridge plugin for the **first-generation** BTicino Smarther thermostat, model **X8000**, over its local protocol: no cloud at runtime. It uses the client in [`@much-smarther/core`](https://github.com/iu5gal/homebridge-much-smarther/blob/main/packages/core/README.md).
 
 > **Status: early version, 0.2.x.** Verified against a real X8000 in heating, for every command it sends, and with Homebridge 2.5 on a Raspberry Pi 3, including restarts and network drops. Cooling is supported but has only been tried with the simulator. Not affiliated with or endorsed by BTicino or Legrand.
 
 Requires Node.js 22, 24 or 26 and Homebridge 1.8 or later (tried with 1.11 and 2.x). Tried on Linux and macOS. **Windows: everything still has to be tried**; the code supports it and the automated tests run there, but it has never been used with Homebridge on Windows. Reports and contributions are welcome.
 
-User guides: [installation](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/installation.md), [setup and pairing](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/setup.md), [features and limitations](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/features.md), [troubleshooting](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/troubleshooting.md), [security](https://github.com/iu5gal/much-smarther-bridge/blob/main/SECURITY.md).
+User guides: [installation](https://github.com/iu5gal/homebridge-much-smarther/blob/main/docs/installation.md), [setup and pairing](https://github.com/iu5gal/homebridge-much-smarther/blob/main/docs/setup.md), [features and limitations](https://github.com/iu5gal/homebridge-much-smarther/blob/main/docs/features.md), [troubleshooting](https://github.com/iu5gal/homebridge-much-smarther/blob/main/docs/troubleshooting.md), [security](https://github.com/iu5gal/homebridge-much-smarther/blob/main/SECURITY.md).
 
 ## Installation
 
@@ -28,11 +28,11 @@ User guides: [installation](https://github.com/iu5gal/much-smarther-bridge/blob/
   sudo systemctl restart homebridge
   ```
 
-Then open the plugin's settings in the Homebridge UI: see [setup and pairing](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/setup.md). The full guide, with Homebridge itself, is the [installation guide](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/installation.md).
+Then open the plugin's settings in the Homebridge UI: see [setup and pairing](https://github.com/iu5gal/homebridge-much-smarther/blob/main/docs/setup.md). The full guide, with Homebridge itself, is the [installation guide](https://github.com/iu5gal/homebridge-much-smarther/blob/main/docs/installation.md).
 
 | Commands | Thermostat settings |
 | --- | --- |
-| ![Setup page, Commands tab](https://raw.githubusercontent.com/iu5gal/much-smarther-bridge/main/docs/images/setup-commands.png) | ![Setup page, Thermostat tab](https://raw.githubusercontent.com/iu5gal/much-smarther-bridge/main/docs/images/setup-thermostat.png) |
+| ![Setup page, Commands tab](https://raw.githubusercontent.com/iu5gal/homebridge-much-smarther/main/docs/images/setup-commands.png) | ![Setup page, Thermostat tab](https://raw.githubusercontent.com/iu5gal/homebridge-much-smarther/main/docs/images/setup-thermostat.png) |
 
 *The setup page, with the simulator.*
 
@@ -115,9 +115,9 @@ The setup page and the names in the Home app come in 43 languages: the 24 offici
 - The password is stored in `<Homebridge storage>/much-smarther/pswopen`, in a directory with mode 0700 and a file with mode 0600, and is never logged. **Homebridge backups contain it.**
 - The setup page talks to the plugin through a Unix socket in the same directory, mode 0600, or on Windows through a named pipe: no network port is opened. Every request must carry an access key that the plugin writes at each start into `much-smarther/control-key` (mode 0600), so other users of the computer cannot send commands even where they can open the pipe. It accepts a fixed list of requests, with validated values.
 - On Windows the files have no Unix modes: they are protected by the access rights of the Homebridge storage directory, which is normally in the user's profile.
-- The thermostat's own protocol is not encrypted: see [docs/PROTOCOL.md](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/PROTOCOL.md) §4.3.
+- The thermostat's own protocol is not encrypted: see [docs/PROTOCOL.md](https://github.com/iu5gal/homebridge-much-smarther/blob/main/docs/PROTOCOL.md) §4.3.
 - The Homebridge UI uses plain HTTP unless configured otherwise, so a password typed on the setup page crosses the LAN unencrypted. Use it from a trusted network, or enable HTTPS in the Homebridge UI.
-- Threats, mitigations and residual risks: [docs/SECURITY-MODEL.md](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/SECURITY-MODEL.md).
+- Threats, mitigations and residual risks: [docs/SECURITY-MODEL.md](https://github.com/iu5gal/homebridge-much-smarther/blob/main/docs/SECURITY-MODEL.md).
 
 ## Development
 
@@ -137,6 +137,6 @@ If the plugin is useful to you, you can support its development on [Ko-fi](https
 
 ## Credits and license
 
-Thanks to [Mirmanero](https://github.com/Mirmanero), whose [ha-bticino-x8000](https://github.com/Mirmanero/ha-bticino-x8000) inspired this project. Built with the support of Claude, Anthropic's AI assistant, under the maintainer's direction and review, and verified on a real thermostat. Contributions are welcome: see the [contributing guide](https://github.com/iu5gal/much-smarther-bridge/blob/main/CONTRIBUTING.md).
+Thanks to [Mirmanero](https://github.com/Mirmanero), whose [ha-bticino-x8000](https://github.com/Mirmanero/ha-bticino-x8000) inspired this project. Built with the support of Claude, Anthropic's AI assistant, under the maintainer's direction and review, and verified on a real thermostat. Contributions are welcome: see the [contributing guide](https://github.com/iu5gal/homebridge-much-smarther/blob/main/CONTRIBUTING.md).
 
 MIT. Copyright (c) 2026 iu5gal and contributors.

@@ -2,7 +2,7 @@
 
 TypeScript client for the local XOpen v3 protocol of the first-generation BTicino Smarther thermostat, model **X8000**. It has no Homebridge dependency and no runtime dependencies besides Node.js (22, 24 or 26).
 
-The protocol itself is described in [docs/PROTOCOL.md](https://github.com/iu5gal/much-smarther-bridge/blob/main/docs/PROTOCOL.md); section numbers below (§) refer to it.
+The protocol itself is described in [docs/PROTOCOL.md](https://github.com/iu5gal/homebridge-much-smarther/blob/main/docs/PROTOCOL.md); section numbers below (§) refer to it.
 
 > **Partly verified on a real device.** Authentication, reading the state, events, keep-alive, the program list, diagnostics and device files have been checked against a real X8000, and so has every `SET` this library builds (manual, timed manual, boost, off, timed off, back to the program, writing and erasing a program). Heating only: cooling has not been tried. Points marked **[PA]** or **[ASM]** in PROTOCOL.md may still turn out wrong.
 
