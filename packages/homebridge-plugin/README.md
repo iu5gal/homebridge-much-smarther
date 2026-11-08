@@ -2,6 +2,8 @@
 
 [![verified-by-homebridge](https://img.shields.io/badge/homebridge-verified-blueviolet?color=%23491F59&style=for-the-badge&logoColor=%23FFFFFF&logo=homebridge)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
+[![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/iu5gal)
+
 ![Much Smarther Bridge: the first-generation BTicino Smarther X8000 in Apple Home, over your local network](https://raw.githubusercontent.com/iu5gal/much-smarther-bridge/main/docs/images/social-preview.png)
 
 > **Only for the first-generation Smarther, model X8000.** The later Smarther2 with Netatmo is a different product and is not supported.
