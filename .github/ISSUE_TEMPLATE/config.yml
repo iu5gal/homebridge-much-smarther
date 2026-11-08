@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: Report a security vulnerability
-    url: https://github.com/iu5gal/much-smarther-bridge/security/advisories/new
+    url: https://github.com/iu5gal/homebridge-much-smarther/security/advisories/new
     about: Privately, through GitHub's private vulnerability reporting. Please do not open a public issue.
