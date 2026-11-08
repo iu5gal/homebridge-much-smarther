@@ -1,12 +1,14 @@
 # homebridge-much-smarther
 
+[![verified-by-homebridge](https://img.shields.io/badge/homebridge-verified-blueviolet?color=%23491F59&style=for-the-badge&logoColor=%23FFFFFF&logo=homebridge)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+
 ![Much Smarther Bridge: the first-generation BTicino Smarther X8000 in Apple Home, over your local network](https://raw.githubusercontent.com/iu5gal/much-smarther-bridge/main/docs/images/social-preview.png)
 
 > **Only for the first-generation Smarther, model X8000.** The later Smarther2 with Netatmo is a different product and is not supported.
 
 Homebridge plugin for the **first-generation** BTicino Smarther thermostat, model **X8000**, over its local protocol: no cloud at runtime. It uses the client in [`@much-smarther/core`](https://github.com/iu5gal/much-smarther-bridge/blob/main/packages/core/README.md).
 
-> **Status: early version, 0.1.x.** Verified against a real X8000 in heating, for every command it sends, and with Homebridge 2.5 on a Raspberry Pi 3, including restarts and network drops. Cooling is supported but has only been tried with the simulator. Not affiliated with or endorsed by BTicino or Legrand.
+> **Status: early version, 0.2.x.** Verified against a real X8000 in heating, for every command it sends, and with Homebridge 2.5 on a Raspberry Pi 3, including restarts and network drops. Cooling is supported but has only been tried with the simulator. Not affiliated with or endorsed by BTicino or Legrand.
 
 Requires Node.js 22, 24 or 26 and Homebridge 1.8 or later (tried with 1.11 and 2.x). Tried on Linux and macOS. **Windows: everything still has to be tried**; the code supports it and the automated tests run there, but it has never been used with Homebridge on Windows. Reports and contributions are welcome.
 
