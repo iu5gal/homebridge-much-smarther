@@ -2,13 +2,15 @@
 
 # <img src="docs/images/icon.png" alt="" width="40" height="40" align="absmiddle"> Much Smarther Bridge
 
+[![verified-by-homebridge](https://img.shields.io/badge/homebridge-verified-blueviolet?color=%23491F59&style=for-the-badge&logoColor=%23FFFFFF&logo=homebridge)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+
 [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/iu5gal)
 
 > **Only for the first-generation Smarther, model X8000.** The later Smarther2 with Netatmo is a different product and is not supported.
 
 Brings the **first-generation** BTicino Smarther thermostat, model **X8000**, into **Apple Home**, through a Homebridge plugin. It talks to the thermostat over your home network, with no cloud at runtime, and behaves as closely as possible to the BTicino Thermostat app.
 
-> **Status: early version, 0.1.x.** Verified on a real X8000 in heating, with Homebridge 2.5 on a Raspberry Pi 3, including restarts and network drops. Install it from the Homebridge UI (search for `homebridge-much-smarther`) or with npm: see the [installation guide](docs/installation.md#3-install-the-plugin). Cooling has only been tried with the simulator.
+> **Status: early version, 0.2.x.** Verified on a real X8000 in heating, with Homebridge 2.5 on a Raspberry Pi 3, including restarts and network drops. Install it from the Homebridge UI (search for `homebridge-much-smarther`) or with npm: see the [installation guide](docs/installation.md#3-install-the-plugin). Cooling has only been tried with the simulator.
 
 ## What you get
 
